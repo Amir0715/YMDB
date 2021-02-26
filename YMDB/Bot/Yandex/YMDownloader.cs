@@ -22,16 +22,23 @@ namespace YMDB.Bot.Yandex
             return Instance ??= new YMDownloader(login, password);
         }
 
-        public YTrack DownloadTrack(string url)
+        public string DownloadTrack(string url)
         {
             // TODO: проверка на наличие файла
             var track = UrlUtils.GetTrack(url);
             var path = $"Data/{track.Id}.mp3";
             if (!File.Exists(path))
-            {
                 track.Save(path);
-            }
-            return track;
+            return path;
+        }
+        
+        public string DownloadTrack(YTrack track)
+        {
+            // TODO: проверка на наличие файла
+            var path = $"Data/{track.Id}.mp3";
+            if (!File.Exists(path))
+                track.Save(path);
+            return path;
         }
         
     }
