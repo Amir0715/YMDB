@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -13,8 +14,10 @@ using Yandex.Music.Api.Models.Common;
 using Yandex.Music.Client;
 using YMDB.Commands;
 using DSharpPlus.VoiceNext;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using YMDB.Bot.Commands;
+using YMDB.Bot.Playlist;
 using YMDB.Bot.Yandex;
 
 namespace YMDB
@@ -56,11 +59,15 @@ namespace YMDB
             this.Discord.GuildAvailable += this.Client_GuildAvailable;
             this.Discord.ClientErrored += this.Client_ClientError;
             
+            var services = new ServiceCollection()
+                .AddSingleton<Dictionary<DiscordChannel,Playlist>>()
+                .BuildServiceProvider();
             
             this.Commands = this.Discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new []{ cfgjson.CommandPrefix },
-                EnableMentionPrefix = true
+                EnableMentionPrefix = true,
+                Services = services
             });
 
             this.Commands.CommandExecuted += this.Commands_CommandExecuted;

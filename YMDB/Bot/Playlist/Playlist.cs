@@ -4,6 +4,7 @@ using System.Linq;
 using Yandex.Music.Api.Models.Album;
 using Yandex.Music.Api.Models.Playlist;
 using Yandex.Music.Api.Models.Track;
+using YMDB.Bot.Utils;
 
 /*
 TODO: Добавить очередь песен и функционал для взаимодействия с ним.
@@ -16,7 +17,7 @@ TODO: Добавить очередь песен и функционал для 
         + Зациклить песню\очередь\отрезок очереди.
         + Удалить из очереди песню\песни по индексу\индексам.
 */
-namespace YMDB.Bot.Playlis
+namespace YMDB.Bot.Playlist
 {
     public class Playlist
     {
@@ -116,6 +117,17 @@ namespace YMDB.Bot.Playlis
         public void Clear()
         {
             Tracks.Clear();
+        }
+
+        public override string ToString()
+        {
+            var result = "";
+            var i = 0;
+            foreach (var track in Tracks)
+            {   
+                result += $"{i++} `{track.Artists.toString()} - {track.Title}` \n";
+            }
+            return result;
         }
     }
 }

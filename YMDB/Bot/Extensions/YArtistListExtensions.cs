@@ -11,7 +11,7 @@ namespace YMDB.Bot.Utils
             var artists = "" + listArtists.First().Name;
             foreach (var artist in listArtists.GetRange(1, listArtists.Count-1))
             {
-                artists += ", " + artist;
+                artists += ", " + artist.Name;
             }
 
             return artists;
