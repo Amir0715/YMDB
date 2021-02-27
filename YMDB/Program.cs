@@ -9,6 +9,9 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.Extensions;
 using Microsoft.Extensions.Logging;
 using Yandex.Music.Api.Models.Common;
 using Yandex.Music.Client;
@@ -70,6 +73,14 @@ namespace YMDB
                 Services = services
             });
 
+            var interactivity = new InteractivityConfiguration()
+            {
+                PollBehaviour = PollBehaviour.KeepEmojis,
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            this.Discord.UseInteractivity(interactivity);
+            
             this.Commands.CommandExecuted += this.Commands_CommandExecuted;
             this.Commands.CommandErrored += this.Commands_CommandErrored;
             

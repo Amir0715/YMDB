@@ -111,20 +111,23 @@ namespace YMDB.Bot.Commands
             Exception exc = null;
             try
             {
+                string filepath = null;
                 var type = UrlUtils.GetTypeOfUrl(url);
+                
                 switch (type)
                 {
                     case UrlUtils.TypeOfUrl.NONE: 
                         await ctx.RespondAsync("Incorrect url. Please try again or get help via `~help`.");
                         return;
+                    
                     case UrlUtils.TypeOfUrl.TRACK:
                         var track = UrlUtils.GetTrack(url);
-                        await ctx.RespondAsync($"Track is `{track.Title}` - `{track.Artists.toString()}`.");
-                        // TODO: Логика проигрыввания трека или добавления его в очередь.
-                        // Наверное лучше реализовать функцию проигрывания файла отдельно с сигнатурой
-                        // private async (void?) PlayFile(DiscordContext ctx, string path)
-                        var filepath = YMDownloader.GetInstance().DownloadTrack(url);
-                        await PlayFile(ctx, vnc, filepath);
+                        
+                        await ctx.RespondAsync(track.GetEmbedBuilder().WithUrl(url));
+                        
+                        filepath = YMDownloader.GetInstance().DownloadTrack(url);
+                        
+                        
                         break;
                     case UrlUtils.TypeOfUrl.ALBUM:
                         var album = UrlUtils.GetAlbum(url);
@@ -133,6 +136,9 @@ namespace YMDB.Bot.Commands
                     case UrlUtils.TypeOfUrl.ARTIST: break;
                     case UrlUtils.TypeOfUrl.PLAYLIST: break;
                 }
+                
+                await PlayFile(ctx, vnc, filepath);
+
             }
             catch (Exception ex) { exc = ex; }
             if (exc != null)
@@ -224,6 +230,8 @@ namespace YMDB.Bot.Commands
         
         private async Task PlayFile(CommandContext ctx, VoiceNextConnection vnc, string filepath)
         {
+            if (filepath == null)
+                return;
             if (vnc.IsPlaying)
             {
                 
