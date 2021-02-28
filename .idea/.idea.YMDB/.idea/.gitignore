@@ -11,3 +11,12 @@
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
+
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+/Data/
+.idea/
+*.xml
