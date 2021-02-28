@@ -15,5 +15,8 @@ namespace YMDB.Bot.Utils
         
         [JsonProperty("password")]
         public string Password { get; private set; }
+
+        [JsonProperty("downloadPath")]
+        public string DownloadPath { get; private set; }
     }
 }

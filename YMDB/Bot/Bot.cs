@@ -77,7 +77,7 @@ namespace YMDB.Bot
             
             this.Voice =  this.Discord.UseVoiceNext();
 
-            this.YMD = YMDownloader.GetInstance(config.Login, config.Password);
+            this.YMD = YMDownloader.GetInstance(config.Login, config.Password, config.DownloadPath);
             
         }
         
