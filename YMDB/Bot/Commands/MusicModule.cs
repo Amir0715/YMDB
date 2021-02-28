@@ -21,6 +21,8 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.VoiceNext;
 using YMDB.Bot.Utils;
 using YMDB.Bot.Yandex;
@@ -215,7 +217,9 @@ namespace YMDB.Bot.Commands
         {
             var channel = ctx.Member.VoiceState.Channel;
             var track = UrlUtils.GetTrack(url);
+            
             Playlists[channel].AddToEnd(track);
+            
             await ctx.RespondAsync(
                 $"`{track.Title} - {track.Artists.toString()}` added to playlist channel `{channel.Name}`");
         }
@@ -224,8 +228,12 @@ namespace YMDB.Bot.Commands
         public async Task List(CommandContext ctx)
         {
             var channel = ctx.Member.VoiceState.Channel;
-
-            await ctx.RespondAsync(Playlists[channel]?.ToString());
+            var interactivity = ctx.Client.GetInteractivity();
+            
+            var (str, embed) = Playlists[channel].GetPages();
+            
+            var pages = interactivity.GeneratePagesInEmbed(input: str, splittype: SplitType.Line, embedbase: embed);
+            await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, pages);
         }
         
         private async Task PlayFile(CommandContext ctx, VoiceNextConnection vnc, string filepath)

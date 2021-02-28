@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Yandex.Music.Api.Models.Album;
@@ -19,7 +20,7 @@ TODO: Добавить очередь песен и функционал для 
 */
 namespace YMDB.Bot.Playlist
 {
-    public class Playlist
+    public class Playlist : IEnumerable<YTrack>
     {
         public List<YTrack> Tracks { get; private set; }
 
@@ -119,6 +120,8 @@ namespace YMDB.Bot.Playlist
             Tracks.Clear();
         }
 
+
+
         public override string ToString()
         {
             var result = "";
@@ -129,5 +132,15 @@ namespace YMDB.Bot.Playlist
             }
             return result;
         }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Tracks.GetEnumerator();
+        }
+        public IEnumerator<YTrack> GetEnumerator()
+        {
+            return Tracks.GetEnumerator();
+        }
+        
     }
 }

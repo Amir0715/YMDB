@@ -25,6 +25,10 @@ namespace YMDB.Bot.Utils
             var time = new TimeSpan(hours,minutes,seconds);
             return time;
         }
-        
+
+        public static string toString(this YTrack track)
+        {
+            return $"{track.Title} - {track.Artists.toString()}";
+        }
     }
 }
