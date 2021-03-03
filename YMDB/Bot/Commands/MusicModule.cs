@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -24,6 +25,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.VoiceNext;
+using Microsoft.Extensions.Logging;
 using YMDB.Bot.Utils;
 using YMDB.Bot.Yandex;
 
@@ -90,6 +92,8 @@ namespace YMDB.Bot.Commands
         // }
 
         public Dictionary<DiscordChannel, Playlist.Playlist> Playlists { private get; set; }
+        private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
+        private CancellationToken _cancellationToken;
 
         [Command("play")]
         public async Task Play(CommandContext ctx, [Description("Ссылка трека/плейлиста/альбома")] string url)
@@ -184,12 +188,36 @@ namespace YMDB.Bot.Commands
 
             // check whether we aren't already connected
             var vnc = vnext.GetConnection(ctx.Guild);
-            if (vnc != null)
+            if (vnc == null)
             {
-                // already connected
-                await ctx.RespondAsync("Already connected in this guild.");
+                await ctx.RespondAsync("Bot isn't connected!");
                 return;
             }
+
+            Exception exc = null;
+            try
+            {
+                if (vnc.IsPlaying)
+                {
+                    _cancelTokenSource.Cancel();
+                }
+            }
+            catch (OperationCanceledException o)
+            {
+                await ctx.RespondAsync($"Next");
+            }
+            catch (Exception ex)
+            {
+                exc = ex;
+            }
+            finally
+            {
+                await vnc.SendSpeakingAsync(false);
+            }
+            if (exc != null)
+                await ctx.RespondAsync($"An exception occured during playback: `{exc.GetType()}: {exc.Message}`");
+            
+            PlayNextTrack(ctx,3);
         }
         
         [Command("join")]
@@ -261,6 +289,12 @@ namespace YMDB.Bot.Commands
         public async Task Add(CommandContext ctx, string url)
         {
             var vnext = ctx.Client.GetVoiceNext();
+            if (vnext == null)
+            {
+                // not enabled
+                await ctx.RespondAsync("VNext is not enabled or configured.");
+                return;
+            }
             var vnc = vnext.GetConnection(ctx.Guild);
             if (vnc == null)
             {
@@ -297,6 +331,8 @@ namespace YMDB.Bot.Commands
         
         private async Task PlayFile(CommandContext ctx, string filepath)
         {
+            ResetToken();
+            
             var vnc = ctx.Client.GetVoiceNext().GetConnection(ctx.Guild);
             if (filepath == null)
             {
@@ -314,24 +350,58 @@ namespace YMDB.Bot.Commands
 
             try
             {
+                // генерация OperationCanceledException при команде next 
                 await vnc.SendSpeakingAsync(true);
                 var ffout = FfmpegUtils.ConvertToPCM(filepath);
-            
+                
                 var txStream = vnc.GetTransmitSink();
-                await ffout.CopyToAsync(txStream);
-                await txStream.FlushAsync();
+
+                await ffout.CopyToAsync(txStream, cancellationToken: _cancellationToken);
+                await txStream.FlushAsync(_cancellationToken);
             }
-            catch (Exception ex) { exc = ex; }
+            catch (OperationCanceledException o)
+            {
+                await ctx.RespondAsync($"Next from playfile");
+            }
+            catch (Exception ex)
+            {
+                exc = ex;
+            }
             finally
             {
+                _cancelTokenSource.Dispose();
                 await vnc.SendSpeakingAsync(false);
+                await ctx.RespondAsync($"SendSpeakingAsync false");
             }
             if (exc != null)
                 await ctx.RespondAsync($"An exception occured during playback: `{exc.GetType()}: {exc.Message}`");
             
         }
 
-        private async Task PlayNextTrack(CommandContext ctx)
+        [Command("stop")]
+        private async Task Stop(CommandContext ctx)
+        {
+            var vnext = ctx.Client.GetVoiceNext();
+            if (vnext == null)
+            {
+                // not enabled
+                await ctx.RespondAsync("VNext is not enabled or configured.");
+                return;
+            }
+
+            // check whether we aren't already connected
+            var vnc = vnext.GetConnection(ctx.Guild);
+            if (vnc == null)
+            {
+                await ctx.RespondAsync("Bot isn't connected!");
+                return;
+            }
+            if (vnc.IsPlaying)
+            {
+                _cancelTokenSource.Cancel();
+            }
+        }
+        private async Task PlayNextTrack(CommandContext ctx, float timeoutsec = 0)
         {
             var vnext = ctx.Client.GetVoiceNext();
             var vnc = vnext.GetConnection(ctx.Guild);
@@ -345,26 +415,43 @@ namespace YMDB.Bot.Commands
                 await ctx.RespondAsync("Для данного канала не существует плейлиста!");
                 return;
             }
+            var startDateTime = DateTime.Now;
+            while (vnc.IsPlaying && (DateTime.Now - startDateTime).TotalSeconds < timeoutsec)
+            {
+                Thread.Sleep(500);
+            }
             if (vnc.IsPlaying)
             {
                 await ctx.RespondAsync("Bot playing music");
-                return;
             }
             else
             {
-                while (Playlists[vnc.TargetChannel].GetCount() > 0)
+                // Переделать так что бы можно было скипать текущую песню
+                if (Playlists[vnc.TargetChannel].GetCount() > 0)
                 {
                     var track = Playlists[vnc.TargetChannel].GetNext();
                     var filepath = YMDownloader.GetInstance().DownloadTrack(track);
+
                     await ctx.RespondAsync(track.GetEmbedBuilder().WithUrl(track.GetLink()));
+
                     await PlayFile(ctx, filepath);
                     await vnc.WaitForPlaybackFinishAsync();
+
                     Playlists[vnc.TargetChannel].RemoveAt(0);
                     await ctx.Message.RespondAsync($"Finished playing `{track.toString()}`");
                 }
-                await ctx.Message.RespondAsync($"Playlist is empty!");
-                
+                else
+                {
+                    await ctx.Message.RespondAsync($"Playlist is empty!");
+                }
             }
+        }
+
+        private void ResetToken()
+        {
+            this._cancelTokenSource = new CancellationTokenSource();
+            this._cancellationToken = this._cancelTokenSource.Token;
+            _cancellationToken.Register(()=> this.ResetToken());
         }
         
     }
