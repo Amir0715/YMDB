@@ -54,8 +54,6 @@ namespace YMDB.Bot.Playlist
         public YTrack GetNext()
         {
             var track = Tracks[0];
-            if (!LoopedSong)
-                Tracks.RemoveAt(0);
             return track;
         }
 

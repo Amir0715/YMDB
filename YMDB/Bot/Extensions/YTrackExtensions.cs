@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using DSharpPlus.Entities;
 using Yandex.Music.Api.Models.Track;
 
@@ -29,6 +30,11 @@ namespace YMDB.Bot.Utils
         public static string toString(this YTrack track)
         {
             return $"{track.Title} - {track.Artists.toString()}";
+        }
+
+        public static string GetLink(this YTrack track)
+        {
+            return $"https://music.yandex.ru/album/{track.Albums.First().Id}/track/{track.Id}";
         }
     }
 }
