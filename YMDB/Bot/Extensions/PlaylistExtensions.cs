@@ -10,14 +10,8 @@ namespace YMDB.Bot.Utils
     {
         public static DiscordEmbedBuilder GetEmbedBuilder(this Playlist.Playlist playlist)
         {
-            var listsongs = "";
-            var duration = new TimeSpan();
-            var i = 0;
-            foreach (var track in playlist)
-            {
-                listsongs += $"`[{i++}]`" + track.toString() + "\n";
-                duration += track.GetDuration();
-            }
+            var listsongs = playlist.ToString();
+            var duration = playlist.GetDuration();
 
             return new DiscordEmbedBuilder()
                 .WithTitle("Current playlist")
@@ -29,15 +23,8 @@ namespace YMDB.Bot.Utils
         
         public static (string str,DiscordEmbedBuilder embedBuilder) GetPages(this Playlist.Playlist playlist)
         {
-            var listsongs = "";
-            var duration = new TimeSpan();
-            var i = 0;
-            foreach (var track in playlist)
-            {
-                var trackduration =  track.GetDuration();
-                listsongs += $"`[{i++}]` | **" + track.toString() + $"** \t \t \t | `{trackduration.ToString()}`\n";
-                duration += trackduration;
-            }
+            var listsongs = playlist.ToString();
+            var duration = playlist.GetDuration();
 
             var embed = new DiscordEmbedBuilder()
                 .WithTitle("Current playlist")

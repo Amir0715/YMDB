@@ -118,18 +118,30 @@ namespace YMDB.Bot.Playlist
             Tracks.Clear();
         }
 
-
+        public TimeSpan GetDuration()
+        {
+            var duration = new TimeSpan(0);
+            foreach (var track in Tracks)
+            {
+                duration += track.GetDuration();
+            }
+            return duration;
+        }
 
         public override string ToString()
         {
             var result = "";
+            if (this.GetCount() == 0) result = "Empty playlist!";
             var i = 0;
             foreach (var track in Tracks)
-            {   
-                result += $"{i++} `{track.Artists.toString()} - {track.Title}` \n";
+            {
+                var trackduration =  track.GetDuration();
+                result += $"`[{i++}]` | **" + track.toString() + $"** \t \t \t | `{trackduration.ToString()}`\n";
             }
             return result;
         }
+        
+        
 
         IEnumerator IEnumerable.GetEnumerator()
         {
