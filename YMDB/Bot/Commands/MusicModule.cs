@@ -1,16 +1,14 @@
 /*
  TODO: 
-    Добавить методы для проигрывания\остановки\паузы музыки (по ссылке или названию).
-    Доравботать метод проигрывания (автоподключение к каналу).
-    Добавить поддержку проигрывания плейлистов\альбомов\артистов по ссылке.
+    Добавить методы для пропуска музыки (по ссылке или названию).
       
-    Добавить красивый вывод очереди и текущей песни (по возможности отделить цветами).
+    Добавить красивый вывод текущей песни (по возможности отделить цветами).
     Подумать над логированием бота в дебаг режиме.
     Поиск по названию\артисту\альбому\плейлисту с красивым выводом.
-    Вывод обложки по возможности.
     
     МБ
     таймер отключения
+ TODO: Переписать строки-интерфейса на русский 
 */
 
 
@@ -25,6 +23,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.VoiceNext;
+using Microsoft.Extensions.Logging;
 using YMDB.Bot.Utils;
 using YMDB.Bot.Yandex;
 
@@ -33,63 +32,6 @@ namespace YMDB.Bot.Commands
     [ModuleLifespan(ModuleLifespan.Singleton)]
     public class MusicModule : BaseCommandModule
     {
-        // [Command("play")]
-        // public async Task Play(CommandContext ctx, [RemainingText, Description("Full path to the file to play.")] string path)
-        // {
-        //     var vnext = ctx.Client.GetVoiceNext();
-        //     if (vnext == null)
-        //     {
-        //         // not enabled
-        //         await ctx.RespondAsync("VNext is not enabled or configured.");
-        //         return;
-        //     }
-        //
-        //     // check whether we aren't already connected
-        //     var vnc = vnext.GetConnection(ctx.Guild);
-        //     if (vnc == null)
-        //     {
-        //         // already connected
-        //         await ctx.RespondAsync("Not connected in this guild.");
-        //         return;
-        //     }
-        //     
-        //     // check if file exists
-        //     if (!File.Exists(path))
-        //     {
-        //         // file does not exist
-        //         await ctx.RespondAsync($"File `{path}` does not exist.");
-        //         return;
-        //     }
-        //     
-        //     // wait for current playback to finish
-        //     while (vnc.IsPlaying)
-        //         await vnc.WaitForPlaybackFinishAsync();
-        //     
-        //     Exception exc = null;
-        //     await ctx.Message.RespondAsync($"Playing `{path}`");
-        //     
-        //     try
-        //     {
-        //         await vnc.SendSpeakingAsync(true);
-        //         
-        //         var ffout = FfmpegUtils.ConvertToPCM(path);
-        //
-        //         var txStream = vnc.GetTransmitSink();
-        //         await ffout.CopyToAsync(txStream);
-        //         await txStream.FlushAsync();
-        //         await vnc.WaitForPlaybackFinishAsync();
-        //     }
-        //     catch (Exception ex) { exc = ex; }
-        //     finally
-        //     {
-        //         await vnc.SendSpeakingAsync(false);
-        //         await ctx.Message.RespondAsync($"Finished playing `{path}`");
-        //     }
-        //
-        //     if (exc != null)
-        //         await ctx.RespondAsync($"An exception occured during playback: `{exc.GetType()}: {exc.Message}`");
-        // }
-
         public Dictionary<DiscordChannel, Playlist.Playlist> Playlists { private get; set; }
         private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
         private CancellationToken _cancellationToken;
@@ -116,7 +58,6 @@ namespace YMDB.Bot.Commands
             Exception exc = null;
             try
             {
-                string filepath = null;
                 var type = UrlUtils.GetTypeOfUrl(url);
                 
                 if (vnc == null)
@@ -133,24 +74,39 @@ namespace YMDB.Bot.Commands
                         return;
                     
                     case UrlUtils.TypeOfUrl.TRACK:
-                        
-                        await Add(ctx, url);
-                        await PlayNextTrack(ctx);
-                        
+
+                        var track = UrlUtils.GetTrack(url);
+                        Playlists[vnc.TargetChannel].AddToEnd(track);
                         break;
                     case UrlUtils.TypeOfUrl.ALBUM:
+                        
                         var album = UrlUtils.GetAlbum(url);
+                        Playlists[vnc.TargetChannel].AddToEnd(album);
                         await ctx.RespondAsync($"Album is `{album.Title}` - `{album.Volumes.Count}`");
+                        
                         break;
-                    case UrlUtils.TypeOfUrl.ARTIST: break;
-                    case UrlUtils.TypeOfUrl.PLAYLIST: break;
+                    case UrlUtils.TypeOfUrl.ARTIST:
+
+                        var artist = UrlUtils.GetArtistBriefInfo(url);
+                        Playlists[vnc.TargetChannel].AddToEnd(artist);
+                        
+                        await ctx.RespondAsync($"Artist is `{artist.Artist.Name}` - `{artist.PopularTracks.Count}`");
+                        
+                        break;
+                    case UrlUtils.TypeOfUrl.PLAYLIST: 
+                        
+                        var playlist = UrlUtils.GetPlaylist(url);
+                        Playlists[vnc.TargetChannel].AddToEnd(playlist);
+                        await ctx.RespondAsync($"PLAYLIST is `{playlist.Title}` - `{playlist.Tracks.Count}`");
+                        break;
                 }
                 
-
+                await PlayNextTrack(ctx);
             }
             catch (Exception ex) { exc = ex; }
             if (exc != null)
                 await ctx.RespondAsync($"An exception occured during playback: `{exc.GetType()}: {exc.Message}`");
+            
         }
 
         [Command("next")]
@@ -180,7 +136,7 @@ namespace YMDB.Bot.Commands
                     _cancelTokenSource.Cancel();
                 }
             }
-            catch (OperationCanceledException o)
+            catch (OperationCanceledException)
             {
             }
             catch (Exception ex)
@@ -348,7 +304,7 @@ namespace YMDB.Bot.Commands
                 await ffout.CopyToAsync(txStream, cancellationToken: _cancellationToken);
                 await txStream.FlushAsync(_cancellationToken);
             }
-            catch (OperationCanceledException o)
+            catch (OperationCanceledException)
             {
             }
             catch (Exception ex)
@@ -398,7 +354,7 @@ namespace YMDB.Bot.Commands
                 await ctx.RespondAsync("vnc is null");
                 return;
             }
-            if (Playlists[vnc.TargetChannel] == null)
+            if (Playlists[vnc.TargetChannel] == null || Playlists[vnc.TargetChannel].GetCount() == 0 )
             {
                 await ctx.RespondAsync("Для данного канала не существует плейлиста!");
                 return;

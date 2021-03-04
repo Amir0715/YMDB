@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Yandex.Music.Api.Models.Album;
+using Yandex.Music.Api.Models.Artist;
 using Yandex.Music.Api.Models.Playlist;
 using Yandex.Music.Api.Models.Track;
 using YMDB.Bot.Utils;
+using YMDB.Bot.Yandex;
 
 /*
 TODO: Добавить очередь песен и функционал для взаимодействия с ним.
@@ -51,29 +53,6 @@ namespace YMDB.Bot.Playlist
             Tracks.Insert(0, track);
         }
 
-        public YTrack GetNext()
-        {
-            var track = Tracks[0];
-            return track;
-        }
-
-        public void RemoveAt(int index)
-        {
-            Tracks.RemoveAt(index);
-        }
-
-        public YTrack Skip(int count)
-        {
-            Tracks.RemoveRange(0, count);
-            return GetNext();
-        }
-
-        public void Shuffle()
-        {
-            var rand = new Random();
-            Tracks = Tracks.OrderBy(x => rand.Next()).ToList();
-        }
-
         public void AddToEnd(YPlaylist playlist)
         {
             var tracksContainers = playlist.Tracks;
@@ -82,7 +61,7 @@ namespace YMDB.Bot.Playlist
                 AddToEnd(trackContainer.Track);
             }
         }
-
+        
         public void AddToBegin(YPlaylist playlist)
         {
             var tracksContainers = playlist.Tracks;
@@ -112,7 +91,45 @@ namespace YMDB.Bot.Playlist
                 }
             }
         }
+
+        public void AddToEnd(YArtistBriefInfo artist)
+        {
+            foreach (var a in artist.Albums)
+            {
+                var al = YMDownloader.GetInstance().Ymc.GetAlbum(a.Id);
+                foreach (var listtrack in al.Volumes)
+                {
+                    foreach (var t in listtrack)
+                    {
+                        AddToEnd(t);
+                    }
+                }
+            }
+        }
         
+        public YTrack GetNext()
+        {
+            var track = Tracks[0];
+            return track;
+        }
+
+        public void RemoveAt(int index)
+        {
+            Tracks.RemoveAt(index);
+        }
+
+        public YTrack Skip(int count)
+        {
+            Tracks.RemoveRange(0, count);
+            return GetNext();
+        }
+
+        public void Shuffle()
+        {
+            var rand = new Random();
+            Tracks = Tracks.OrderBy(x => rand.Next()).ToList();
+        }
+
         public void Clear()
         {
             Tracks.Clear();

@@ -64,7 +64,7 @@ namespace YMDB.Bot.Utils
             if (regex.IsMatch(url))
                 return TypeOfUrl.ALBUM;
 
-            regex = new Regex(@"playlis/(\d*)$");
+            regex = new Regex(@"users/(.*)/playlists/(\d*)$");
             if (regex.IsMatch(url))
                 return TypeOfUrl.PLAYLIST;
 
