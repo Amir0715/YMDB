@@ -109,8 +109,7 @@ namespace YMDB.Bot.Playlist
         
         public YTrack GetNext()
         {
-            var track = Tracks[0];
-            return track;
+            return Tracks[0];
         }
 
         public void RemoveAt(int index)

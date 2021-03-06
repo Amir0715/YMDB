@@ -138,19 +138,110 @@ namespace YMDB.Bot.Commands
             }
             catch (OperationCanceledException)
             {
+                await vnc.SendSpeakingAsync(false);
             }
             catch (Exception ex)
             {
                 exc = ex;
             }
-            finally
-            {
-                await vnc.SendSpeakingAsync(false);
-            }
             if (exc != null)
                 await ctx.RespondAsync($"An exception occured during playback: `{exc.GetType()}: {exc.Message}`");
             
             await PlayNextTrack(ctx,3);
+        }
+
+        [Command("nowplaying")]
+        public async Task NowPlaying(CommandContext ctx)
+        {
+            var vnext = ctx.Client.GetVoiceNext();
+            if (vnext == null)
+            {
+                // not enabled
+                await ctx.RespondAsync("VNext is not enabled or configured.");
+                return;
+            }
+
+            // check whether we aren't already connected
+            var vnc = vnext.GetConnection(ctx.Guild);
+            if (vnc == null)
+            {
+                await ctx.RespondAsync("Bot isn't connected!");
+                return;
+            }
+
+            if (!vnc.IsPlaying)
+            {
+                await ctx.RespondAsync("Bot doesn't playing!");
+                return;
+            }
+
+            var track = Playlists[vnc.TargetChannel].GetNext();
+            await ctx.RespondAsync(track.GetEmbedBuilder().WithUrl(track.GetLink()));
+            
+        }
+
+        [Command("skip")]
+        public async Task Skip(CommandContext ctx, int count = 1)
+        {
+            var vnext = ctx.Client.GetVoiceNext();
+            if (vnext == null)
+            {
+                // not enabled
+                await ctx.RespondAsync("VNext is not enabled or configured.");
+                return;
+            }
+
+            // check whether we aren't already connected
+            var vnc = vnext.GetConnection(ctx.Guild);
+            if (vnc == null)
+            {
+                await ctx.RespondAsync("Bot isn't connected!");
+                return;
+            }
+
+            if (!vnc.IsPlaying)
+            {
+                await ctx.RespondAsync("Bot doesn't playing!");
+                return;
+            }
+            if (count <= 0)
+            {
+                await ctx.RespondAsync("Count can't be <= 0");
+                return;
+            }
+
+            await Stop(ctx);
+            Playlists[vnc.TargetChannel].Skip(count-1);
+            await PlayNextTrack(ctx,3);
+        }
+
+        [Command("clear")]
+        public async Task Clear(CommandContext ctx)
+        {
+            var vnext = ctx.Client.GetVoiceNext();
+            if (vnext == null)
+            {
+                // not enabled
+                await ctx.RespondAsync("VNext is not enabled or configured.");
+                return;
+            }
+
+            // check whether we aren't already connected
+            var vnc = vnext.GetConnection(ctx.Guild);
+            if (vnc == null)
+            {
+                await ctx.RespondAsync("Bot isn't connected!");
+                return;
+            }
+
+            if (Playlists[vnc.TargetChannel].GetCount() == 0)
+            {
+                await ctx.RespondAsync("Playlist is clear!");
+                return;
+            }
+            
+            Playlists[vnc.TargetChannel].Clear();
+            
         }
         
         [Command("join")]
