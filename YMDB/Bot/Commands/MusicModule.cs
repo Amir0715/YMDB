@@ -1,9 +1,6 @@
 /*
  TODO: 
-    Добавить методы для пропуска музыки (по ссылке или названию).
-      
-    Добавить красивый вывод текущей песни (по возможности отделить цветами).
-    Подумать над логированием бота в дебаг режиме.
+    Подумать над логированием бота в дебаг режиме. 
     Поиск по названию\артисту\альбому\плейлисту с красивым выводом.
     
     МБ
@@ -15,15 +12,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.VoiceNext;
 using Microsoft.Extensions.Logging;
+using Yandex.Music.Api.Models.Common;
+using YMDB.Bot.Extensions;
 using YMDB.Bot.Utils;
 using YMDB.Bot.Yandex;
 
@@ -37,7 +38,7 @@ namespace YMDB.Bot.Commands
         private CancellationToken _cancellationToken;
 
         [Command("play")]
-        public async Task Play(CommandContext ctx, [Description("Ссылка трека/плейлиста/альбома")] string url)
+        public async Task Play(CommandContext ctx, string url)
         {
             var vnext = ctx.Client.GetVoiceNext();
             if (vnext == null)
@@ -106,9 +107,42 @@ namespace YMDB.Bot.Commands
             catch (Exception ex) { exc = ex; }
             if (exc != null)
                 await ctx.RespondAsync($"An exception occured during playback: `{exc.GetType()}: {exc.Message}`");
-            
         }
-
+        
+        [Command("search")]
+        public async Task Search(CommandContext ctx, string title)
+        {
+            // var enext = DiscordEmoji.FromName(ctx.Client, ":arrow_forward:");
+            // var eback = DiscordEmoji.FromName(ctx.Client, ":arrow_backward:");
+            
+            var tracks = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track).Tracks.Results;
+            
+            var interactivity = ctx.Client.GetInteractivity();
+            
+            var (str, embed) = tracks.GetPages();
+            
+            var pages = interactivity.GeneratePagesInEmbed(input: str, 
+                splittype: SplitType.Line, embedbase: embed);
+            await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, pages);
+            // var result = await interactivity.WaitForReactionAsync(reaction =>
+            // {
+            //     
+            //     if (reaction.Emoji == enext)
+            //     {
+            //         ctx.RespondAsync("next");
+            //         return true;
+            //     }
+            //     if (reaction.Emoji == eback)
+            //     {
+            //         ctx.RespondAsync("back");
+            //         return true;
+            //     }
+            //
+            //     return false;
+            // }, ctx.Member);
+            // if (!result.TimedOut) await ctx.RespondAsync($"I've got your reaction `{result.Result.Emoji}`");
+        }
+        
         [Command("next")]
         public async Task Next(CommandContext ctx)
         {
@@ -365,6 +399,31 @@ namespace YMDB.Bot.Commands
             await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, pages);
         }
         
+        [Command("stop")]
+        private async Task Stop(CommandContext ctx)
+        {
+            var vnext = ctx.Client.GetVoiceNext();
+            if (vnext == null)
+            {
+                // not enabled
+                await ctx.RespondAsync("VNext is not enabled or configured.");
+                return;
+            }
+
+            // check whether we aren't already connected
+            var vnc = vnext.GetConnection(ctx.Guild);
+            if (vnc == null)
+            {
+                await ctx.RespondAsync("Bot isn't connected!");
+                return;
+            }
+            
+            if (vnc.IsPlaying)
+            {
+                _cancelTokenSource.Cancel();
+            }
+        }
+        
         private async Task PlayFile(CommandContext ctx, string filepath)
         {
             ResetToken();
@@ -411,31 +470,7 @@ namespace YMDB.Bot.Commands
                 await ctx.RespondAsync($"An exception occured during playback: `{exc.GetType()}: {exc.Message}`");
             
         }
-
-        [Command("stop")]
-        private async Task Stop(CommandContext ctx)
-        {
-            var vnext = ctx.Client.GetVoiceNext();
-            if (vnext == null)
-            {
-                // not enabled
-                await ctx.RespondAsync("VNext is not enabled or configured.");
-                return;
-            }
-
-            // check whether we aren't already connected
-            var vnc = vnext.GetConnection(ctx.Guild);
-            if (vnc == null)
-            {
-                await ctx.RespondAsync("Bot isn't connected!");
-                return;
-            }
-            
-            if (vnc.IsPlaying)
-            {
-                _cancelTokenSource.Cancel();
-            }
-        }
+        
         private async Task PlayNextTrack(CommandContext ctx, float timeoutsec = 0)
         {
             var vnext = ctx.Client.GetVoiceNext();
