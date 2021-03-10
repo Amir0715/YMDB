@@ -131,7 +131,7 @@ namespace YMDB.Bot.Playlist
 
         public void Clear()
         {
-            Tracks.Clear();
+            Tracks.RemoveRange(1, Tracks.Count-1);
         }
 
         public TimeSpan GetDuration()
