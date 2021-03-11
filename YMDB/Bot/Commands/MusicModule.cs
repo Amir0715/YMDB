@@ -41,7 +41,7 @@ namespace YMDB.Bot.Commands
         private CancellationToken _cancellationToken;
 
         [Command("play")]
-        public async Task Play(CommandContext ctx, string url)
+        public async Task Play(CommandContext ctx,[RemainingText] string url)
         {
             // Подумать над "фикстурами"
             var vnext = ctx.Client.GetVoiceNext();
@@ -66,10 +66,10 @@ namespace YMDB.Bot.Commands
 
                 switch (type)
                 {
-                    case UrlUtils.TypeOfUrl.NONE: 
+                    case UrlUtils.TypeOfUrl.NONE:
+                        await Search(ctx, url);
                         
-                        await ctx.RespondAsync("Не могу определить ссылку, попробуйте еще раз или введите `~help`.");
-                        return;
+                        break;
                     
                     case UrlUtils.TypeOfUrl.TRACK:
 
@@ -80,22 +80,19 @@ namespace YMDB.Bot.Commands
                         
                         var album = UrlUtils.GetAlbum(url);
                         Playlists[vnc.TargetChannel].AddToEnd(album);
-                        await ctx.RespondAsync($"Album is `{album.Title}` - `{album.Volumes.Count}`");
-                        
+
                         break;
                     case UrlUtils.TypeOfUrl.ARTIST:
 
                         var artist = UrlUtils.GetArtistBriefInfo(url);
                         Playlists[vnc.TargetChannel].AddToEnd(artist);
-                        
-                        await ctx.RespondAsync($"Artist is `{artist.Artist.Name}` - `{artist.PopularTracks.Count}`");
-                        
+
                         break;
                     case UrlUtils.TypeOfUrl.PLAYLIST: 
                         
                         var playlist = UrlUtils.GetPlaylist(url);
                         Playlists[vnc.TargetChannel].AddToEnd(playlist);
-                        await ctx.RespondAsync($"PLAYLIST is `{playlist.Title}` - `{playlist.Tracks.Count}`");
+                        
                         break;
                 }
                 
@@ -151,48 +148,61 @@ namespace YMDB.Bot.Commands
                 {
                     return true;
                 }
-
                 return false;
             }, TimeSpan.FromMinutes(1));
+            
             if (!res.TimedOut)
             {
                 await ctx.RespondAsync("I got your answer : " + res.Result.Content);
+                
                 Int32.TryParse(res.Result.Content, out var x);
+                
                 var pageIndex = x / 20;
                 var trackIndexInPage = x % 20;
+                
                 var tracksResults = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, pageIndex).Tracks.Results;
+                
                 await Add(ctx, tracksResults[trackIndexInPage].GetLink());
             }
-
-            task.Wait();
+            
         }
         
         private IEnumerable<Page> GetNextPage(InteractivityExtension interactivity, string title)
         {
             var startindex = 0;
             var total = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track).Tracks.Total;
-            
+
             if (total != null)
-                for (var i = 1; i < (int) total / 10; i++)
+            {
+                var tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, 0).Tracks.Results;
+
+                startindex += 10;
+                var (str, embed) = tmp.GetPage(1, startindex);
+                var page = interactivity.GeneratePagesInEmbed(input: str,
+                    splittype: SplitType.Line, embedbase: embed);
+
+                yield return page.First();
+                
+                for (var i = 1; i < (int) total / 20; i++)
                 {
-                    var tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, i).Tracks.Results;
-                    
+                    tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, i).Tracks.Results;
+
                     startindex += 10;
-                    var (str, embed) = tmp.GetPage(0, startindex);
-                    var page = interactivity.GeneratePagesInEmbed(input: str,
+                    (str, embed) = tmp.GetPage(0, startindex);
+                    page = interactivity.GeneratePagesInEmbed(input: str,
                         splittype: SplitType.Line, embedbase: embed);
-                    
+
                     yield return page.First();
-                    
+
                     startindex += 10;
                     (str, embed) = tmp.GetPage(1, startindex);
                     page = interactivity.GeneratePagesInEmbed(input: str,
                         splittype: SplitType.Line, embedbase: embed);
-                    
+
                     yield return page.First();
                 }
+            }
         }
-        
         
         [Command("next")]
         public async Task Next(CommandContext ctx)
