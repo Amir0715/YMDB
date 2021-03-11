@@ -11,6 +11,7 @@
 
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -24,6 +25,8 @@ using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.VoiceNext;
 using Microsoft.Extensions.Logging;
 using Yandex.Music.Api.Models.Common;
+using Yandex.Music.Api.Models.Search.Track;
+using YMDB.Bot.CustomPaginationRequests;
 using YMDB.Bot.Extensions;
 using YMDB.Bot.Utils;
 using YMDB.Bot.Yandex;
@@ -40,6 +43,7 @@ namespace YMDB.Bot.Commands
         [Command("play")]
         public async Task Play(CommandContext ctx, string url)
         {
+            // Подумать над "фикстурами"
             var vnext = ctx.Client.GetVoiceNext();
             if (vnext == null)
             {
@@ -51,26 +55,19 @@ namespace YMDB.Bot.Commands
             var vnc = vnext.GetConnection(ctx.Guild);
             if (vnc == null)
             {
-                // yet don't connected
-                // await ctx.RespondAsync("Not connected in this guild.");
                 await this.Join(ctx);
                 vnc = vnext.GetConnection(ctx.Guild);
             }
+            
             Exception exc = null;
             try
             {
                 var type = UrlUtils.GetTypeOfUrl(url);
-                
-                if (vnc == null)
-                {
-                    await ctx.RespondAsync("vnc is null");
-                    return;
-                }
-                
+
                 switch (type)
                 {
                     case UrlUtils.TypeOfUrl.NONE: 
-                        // Если ссылка нам не знакома
+                        
                         await ctx.RespondAsync("Не могу определить ссылку, попробуйте еще раз или введите `~help`.");
                         return;
                     
@@ -110,38 +107,92 @@ namespace YMDB.Bot.Commands
         }
         
         [Command("search")]
-        public async Task Search(CommandContext ctx, string title)
+        public async Task Search(CommandContext ctx, [RemainingText] string title)
         {
-            // var enext = DiscordEmoji.FromName(ctx.Client, ":arrow_forward:");
-            // var eback = DiscordEmoji.FromName(ctx.Client, ":arrow_backward:");
+            var vnext = ctx.Client.GetVoiceNext();
+            if (vnext == null)
+            {
+                // not enabled
+                await ctx.RespondAsync("VNext не подключен или настроен.");
+                return;
+            }
+            
+            var vnc = vnext.GetConnection(ctx.Guild);
+            if (vnc == null)
+            {
+                await this.Join(ctx);
+                vnc = vnext.GetConnection(ctx.Guild);
+            }
             
             var tracks = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track).Tracks.Results;
             
             var interactivity = ctx.Client.GetInteractivity();
             
-            var (str, embed) = tracks.GetPages();
-            
+            var (str, embed) = tracks.GetPage(0);
+
             var pages = interactivity.GeneratePagesInEmbed(input: str, 
                 splittype: SplitType.Line, embedbase: embed);
-            await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, pages);
-            // var result = await interactivity.WaitForReactionAsync(reaction =>
-            // {
-            //     
-            //     if (reaction.Emoji == enext)
-            //     {
-            //         ctx.RespondAsync("next");
-            //         return true;
-            //     }
-            //     if (reaction.Emoji == eback)
-            //     {
-            //         ctx.RespondAsync("back");
-            //         return true;
-            //     }
-            //
-            //     return false;
-            // }, ctx.Member);
-            // if (!result.TimedOut) await ctx.RespondAsync($"I've got your reaction `{result.Result.Emoji}`");
+
+            DiscordMessage message = await new DiscordMessageBuilder().WithContent(pages.First<Page>().Content)
+                .WithEmbed(pages.First<Page>().Embed).SendAsync(ctx.Channel).ConfigureAwait(false);
+
+            var customPage = new CustomPaginationRequest(message, ctx.Member,
+                PaginationBehaviour.Ignore, PaginationDeletion.DeleteEmojis, new PaginationEmojis(),
+                TimeSpan.FromMinutes(1), pages.ToArray());
+            
+            customPage.SetEnumerator(GetNextPage(interactivity, title).GetEnumerator());
+            var task = interactivity.WaitForCustomPaginationAsync(customPage);
+            
+            await ctx.RespondAsync("Enter the index of track: ");
+            
+            var res = await interactivity.WaitForMessageAsync(m =>
+            {
+                if (Int32.TryParse(m.Content.Trim(), out var x))
+                {
+                    return true;
+                }
+
+                return false;
+            }, TimeSpan.FromMinutes(1));
+            if (!res.TimedOut)
+            {
+                await ctx.RespondAsync("I got your answer : " + res.Result.Content);
+                Int32.TryParse(res.Result.Content, out var x);
+                var pageIndex = x / 20;
+                var trackIndexInPage = x % 20;
+                var tracksResults = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, pageIndex).Tracks.Results;
+                await Add(ctx, tracksResults[trackIndexInPage].GetLink());
+            }
+
+            task.Wait();
         }
+        
+        private IEnumerable<Page> GetNextPage(InteractivityExtension interactivity, string title)
+        {
+            var startindex = 0;
+            var total = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track).Tracks.Total;
+            
+            if (total != null)
+                for (var i = 1; i < (int) total / 10; i++)
+                {
+                    var tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, i).Tracks.Results;
+                    
+                    startindex += 10;
+                    var (str, embed) = tmp.GetPage(0, startindex);
+                    var page = interactivity.GeneratePagesInEmbed(input: str,
+                        splittype: SplitType.Line, embedbase: embed);
+                    
+                    yield return page.First();
+                    
+                    startindex += 10;
+                    (str, embed) = tmp.GetPage(1, startindex);
+                    page = interactivity.GeneratePagesInEmbed(input: str,
+                        splittype: SplitType.Line, embedbase: embed);
+                    
+                    yield return page.First();
+                }
+        }
+        
         
         [Command("next")]
         public async Task Next(CommandContext ctx)

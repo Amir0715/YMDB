@@ -13,7 +13,6 @@ namespace YMDB.Bot.Extensions
             var listsongs = trackModels.toString();
             var embed = new DiscordEmbedBuilder()
                 .WithTitle("Search result")
-                .AddField("Song count", trackModels.Count.ToString(), true)
                 .WithColor(DiscordColor.Red)
                 .WithDescription(listsongs);
             return (str: listsongs, embedBuilder: embed);
@@ -24,7 +23,6 @@ namespace YMDB.Bot.Extensions
             var listsongs = trackModels.Skip(index * 10).Take(10).ToList().toString(startindex);
             var embed = new DiscordEmbedBuilder()
                 .WithTitle("Search result")
-                .AddField("Song count", trackModels.Count.ToString(), true)
                 .WithColor(DiscordColor.Red)
                 .WithDescription(listsongs);
             return (str: listsongs, embedBuilder: embed);

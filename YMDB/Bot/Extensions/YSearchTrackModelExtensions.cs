@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Yandex.Music.Api.Models.Search.Track;
 using YMDB.Bot.Extensions;
 
@@ -19,6 +20,11 @@ namespace YMDB.Bot.Utils
         public static string toString(this YSearchTrackModel trackModel)
         {
             return $"{trackModel.Title} - {trackModel.Artists.toString()}";
+        }
+        
+        public static string GetLink(this YSearchTrackModel track)
+        {
+            return $"https://music.yandex.ru/album/{track.Albums.First().Id}/track/{track.Id}";
         }
     }
 }

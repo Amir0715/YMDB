@@ -23,11 +23,9 @@ namespace YMDB.Bot.CustomPaginationRequests
         private PaginationEmojis _emojis;
         private DiscordUser _user;
         private int index;
-        
-        
-        public event Action NextEvent;
-        public Func<IEnumerable<Page>> GetNextPage;
-        
+
+        private IEnumerator<Page> _enumerator;
+
         internal CustomPaginationRequest(
             DiscordMessage message,
             DiscordUser user,
@@ -51,6 +49,10 @@ namespace YMDB.Bot.CustomPaginationRequests
                 this._pages.Add(page);
         }
 
+        public void SetEnumerator(IEnumerator<Page> enumerator)
+        {
+            this._enumerator ??= enumerator;
+        }
 
         public async Task<Page> GetPageAsync()
         {
@@ -72,7 +74,8 @@ namespace YMDB.Bot.CustomPaginationRequests
 
         public async Task NextPageAsync()
         {
-            this._pages.Add(this.GetNextPage().First());
+            if (this._enumerator.MoveNext())
+                this._pages.Add(this._enumerator.Current);
             await Task.Yield();
             switch (this._behaviour)
             {
@@ -91,7 +94,6 @@ namespace YMDB.Bot.CustomPaginationRequests
                     ++this.index;
                     break;
             }
-            NextEvent?.Invoke();
         }
 
         public async Task PreviousPageAsync()
@@ -161,6 +163,7 @@ namespace YMDB.Bot.CustomPaginationRequests
         {
             this._ct.Dispose();
             this._tcs = (TaskCompletionSource<bool>) null;
+            this._enumerator.Dispose();
         }
     }
 }
