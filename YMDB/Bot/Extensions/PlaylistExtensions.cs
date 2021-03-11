@@ -21,7 +21,7 @@ namespace YMDB.Bot.Utils
                 .WithDescription(listsongs);
         }
         
-        public static (string str,DiscordEmbedBuilder embedBuilder) GetPages(this Playlist.Playlist playlist)
+        public static (string str, DiscordEmbedBuilder embedBuilder) GetPages(this Playlist.Playlist playlist)
         {
             var listsongs = playlist.ToString();
             var duration = playlist.GetDuration();

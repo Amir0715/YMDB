@@ -20,9 +20,10 @@ namespace YMDB.Bot.Utils
 
         public static TimeSpan GetDuration(this YTrack track)
         {
-            int seconds = (int)(track.DurationMs/1000 % 60);
-            int minutes = (int)(track.DurationMs/1000 / 60);
-            int hours = (int)(track.DurationMs/1000 / 60 / 60);
+            var durationSecond = track.DurationMs / 1000;
+            int seconds = (int)(durationSecond % 60);
+            int minutes = (int)(durationSecond / 60);
+            int hours = (int)(durationSecond / 60 / 60);
             var time = new TimeSpan(hours,minutes,seconds);
             return time;
         }
