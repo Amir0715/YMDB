@@ -7,10 +7,10 @@
 
     <ItemGroup>
       <Reference Include="Yandex.Music.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\Yandex.Music.Api\Yandex.Music.Client\bin\Release\Yandex.Music.Api.dll</HintPath>
+        <HintPath>..\lib\Yandex.Music.Api.dll</HintPath>
       </Reference>
       <Reference Include="Yandex.Music.Client, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\Yandex.Music.Api\Yandex.Music.Client\bin\Release\Yandex.Music.Client.dll</HintPath>
+        <HintPath>..\lib\Yandex.Music.Client.dll</HintPath>
       </Reference>
     </ItemGroup>
 
@@ -21,6 +21,14 @@
       <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-rc2" />
       <PackageReference Include="DSharpPlus.VoiceNext" Version="4.0.0-rc2" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="bin\Debug\net5.0\BotConfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="bin\Debug\net5.0\Data" />
     </ItemGroup>
 
 </Project>
