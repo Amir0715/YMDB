@@ -6,6 +6,7 @@ using Yandex.Music.Api.Models.Album;
 using Yandex.Music.Api.Models.Artist;
 using Yandex.Music.Api.Models.Playlist;
 using Yandex.Music.Api.Models.Track;
+using YMDB.Bot.Extensions;
 using YMDB.Bot.Utils;
 using YMDB.Bot.Yandex;
 
