@@ -46,12 +46,12 @@ namespace YMDB.Bot.Playlist
 
         public void AddToBegin(YTrack track)
         {
-            Tracks.Add(track);
+            Tracks.Insert(0, track);
         }
         
         public void AddToEnd(YTrack track)
         {
-            Tracks.Insert(0, track);
+            Tracks.Add(track);
         }
 
         public void AddToEnd(YPlaylist playlist)
