@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using YMDB.Bot.Commands;
 using YMDB.Bot.Utils;
 using YMDB.Bot.Yandex;
-using YMDB.Commands;
 
 namespace YMDB.Bot
 {
@@ -72,7 +71,6 @@ namespace YMDB.Bot
             this.Commands.CommandErrored += this.Commands_CommandErrored;
             
             // регистрация коммандых модулей 
-            this.Commands.RegisterCommands<HelpModule>();
             this.Commands.RegisterCommands<MusicModule>();
             
             this.Voice =  this.Discord.UseVoiceNext();

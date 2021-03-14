@@ -1,17 +1,4 @@
-/*
- TODO: 
-    Подумать над логированием бота в дебаг режиме. 
-    Поиск по названию\артисту\альбому\плейлисту с красивым выводом.
-    
-    МБ
-    таймер отключения
- TODO: Переписать строки-интерфейса на русский 
-*/
-
-
-
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -23,9 +10,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.VoiceNext;
-using Microsoft.Extensions.Logging;
 using Yandex.Music.Api.Models.Common;
-using Yandex.Music.Api.Models.Search.Track;
 using YMDB.Bot.CustomPaginationRequests;
 using YMDB.Bot.Extensions;
 using YMDB.Bot.Utils;
@@ -40,8 +25,8 @@ namespace YMDB.Bot.Commands
         private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
         private CancellationToken _cancellationToken;
 
-        [Command("play")]
-        public async Task Play(CommandContext ctx,[RemainingText] string url)
+        [Command("play"), Aliases("p"), Description("Play track/playlist/artist's songs/album from yandex.music.") ]
+        public async Task Play(CommandContext ctx, [Description("Url of track/playlist/artist's songs/album or title of track."), RemainingText] string url)
         {
             // Подумать над "фикстурами"
             var vnext = ctx.Client.GetVoiceNext();
@@ -57,6 +42,8 @@ namespace YMDB.Bot.Commands
             {
                 await this.Join(ctx);
                 vnc = vnext.GetConnection(ctx.Guild);
+                if (vnc == null)
+                    return;
             }
             
             Exception exc = null;
@@ -103,8 +90,8 @@ namespace YMDB.Bot.Commands
                 await ctx.RespondAsync($"An exception occured during playback: `{exc.GetType()}: {exc.Message}`");
         }
         
-        [Command("search")]
-        public async Task Search(CommandContext ctx, [RemainingText] string title)
+        [Command("search"), Aliases("se"), Description("Search track by title from yandex.music.")]
+        public async Task Search(CommandContext ctx, [Description("Track title."), RemainingText] string title)
         {
             var vnext = ctx.Client.GetVoiceNext();
             if (vnext == null)
@@ -167,44 +154,7 @@ namespace YMDB.Bot.Commands
             
         }
         
-        private IEnumerable<Page> GetNextPage(InteractivityExtension interactivity, string title)
-        {
-            var startindex = 0;
-            var total = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track).Tracks.Total;
-
-            if (total != null)
-            {
-                var tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, 0).Tracks.Results;
-
-                startindex += 10;
-                var (str, embed) = tmp.GetPage(1, startindex);
-                var page = interactivity.GeneratePagesInEmbed(input: str,
-                    splittype: SplitType.Line, embedbase: embed);
-
-                yield return page.First();
-                
-                for (var i = 1; i < (int) total / 20; i++)
-                {
-                    tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, i).Tracks.Results;
-
-                    startindex += 10;
-                    (str, embed) = tmp.GetPage(0, startindex);
-                    page = interactivity.GeneratePagesInEmbed(input: str,
-                        splittype: SplitType.Line, embedbase: embed);
-
-                    yield return page.First();
-
-                    startindex += 10;
-                    (str, embed) = tmp.GetPage(1, startindex);
-                    page = interactivity.GeneratePagesInEmbed(input: str,
-                        splittype: SplitType.Line, embedbase: embed);
-
-                    yield return page.First();
-                }
-            }
-        }
-        
-        [Command("next")]
+        [Command("next"), Aliases("n"), Description("Next track.")]
         public async Task Next(CommandContext ctx)
         {
             var vnext = ctx.Client.GetVoiceNext();
@@ -245,7 +195,7 @@ namespace YMDB.Bot.Commands
             await PlayNextTrack(ctx,3);
         }
 
-        [Command("nowplaying")]
+        [Command("nowplaying"), Aliases("np"), Description("Shows what track is currently playing.")]
         public async Task NowPlaying(CommandContext ctx)
         {
             var vnext = ctx.Client.GetVoiceNext();
@@ -275,8 +225,8 @@ namespace YMDB.Bot.Commands
             
         }
 
-        [Command("skip")]
-        public async Task Skip(CommandContext ctx, int count = 1)
+        [Command("skip"), Aliases("sk"), Description("Skip count track and play count+1 track.")]
+        public async Task Skip(CommandContext ctx, [Description("Count track, default is 1.")] int count = 1)
         {
             var vnext = ctx.Client.GetVoiceNext();
             if (vnext == null)
@@ -310,7 +260,7 @@ namespace YMDB.Bot.Commands
             await PlayNextTrack(ctx,3);
         }
 
-        [Command("clear")]
+        [Command("clear"), Aliases("cl"), Description("Clear current playlist.")]
         public async Task Clear(CommandContext ctx)
         {
             var vnext = ctx.Client.GetVoiceNext();
@@ -339,8 +289,8 @@ namespace YMDB.Bot.Commands
             
         }
         
-        [Command("join")]
-        public async Task Join(CommandContext ctx, DiscordChannel channel = null)
+        [Command("join"), Aliases("j"), Description("Join to voice channel.")]
+        public async Task Join(CommandContext ctx, [Description("Voice channel.")] DiscordChannel channel = null)
         {
             // check whether VNext is enabled
             VoiceNextExtension vnext;
@@ -381,7 +331,7 @@ namespace YMDB.Bot.Commands
             await ctx.RespondAsync($"Connected to `{channel.Name}`");
         }
         
-        [Command("leave")]
+        [Command("leave"), Aliases("le"), Description("Leave from channel.")]
         public async Task Leave(CommandContext ctx)
         {
             var vnext = ctx.Client.GetVoiceNext();
@@ -407,8 +357,8 @@ namespace YMDB.Bot.Commands
             await ctx.RespondAsync("Disconnected");
         }
         
-        [Command("add")]
-        public async Task Add(CommandContext ctx, string url)
+        [Command("add"), Aliases("a"), Description("Add track to end of playlist.")]
+        public async Task Add(CommandContext ctx, [Description("Track url.")] string url)
         {
             var vnext = ctx.Client.GetVoiceNext();
             if (vnext == null)
@@ -434,7 +384,7 @@ namespace YMDB.Bot.Commands
                 $"`{track.Title} - {track.Artists.toString()}` added to `{channel.Name}` playlist's !");
         }
         
-        [Command("list")]
+        [Command("list"), Aliases("l"), Description("Show current playlist.")]
         public async Task List(CommandContext ctx)
         {
             var vnext = ctx.Client.GetVoiceNext();
@@ -460,7 +410,7 @@ namespace YMDB.Bot.Commands
             await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, pages);
         }
         
-        [Command("stop")]
+        [Command("stop"), Aliases("s"), Description("Stop playing.")]
         private async Task Stop(CommandContext ctx)
         {
             var vnext = ctx.Client.GetVoiceNext();
@@ -582,6 +532,42 @@ namespace YMDB.Bot.Commands
             this._cancellationToken = this._cancelTokenSource.Token;
             _cancellationToken.Register(()=> this.ResetToken());
         }
-        
+        private IEnumerable<Page> GetNextPage(InteractivityExtension interactivity, string title)
+        {
+            var startindex = 0;
+            var total = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track).Tracks.Total;
+
+            if (total != null)
+            {
+                var tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, 0).Tracks.Results;
+
+                startindex += 10;
+                var (str, embed) = tmp.GetPage(1, startindex);
+                var page = interactivity.GeneratePagesInEmbed(input: str,
+                    splittype: SplitType.Line, embedbase: embed);
+
+                yield return page.First();
+                
+                for (var i = 1; i < (int) total / 20; i++)
+                {
+                    tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, i).Tracks.Results;
+
+                    startindex += 10;
+                    (str, embed) = tmp.GetPage(0, startindex);
+                    page = interactivity.GeneratePagesInEmbed(input: str,
+                        splittype: SplitType.Line, embedbase: embed);
+
+                    yield return page.First();
+
+                    startindex += 10;
+                    (str, embed) = tmp.GetPage(1, startindex);
+                    page = interactivity.GeneratePagesInEmbed(input: str,
+                        splittype: SplitType.Line, embedbase: embed);
+
+                    yield return page.First();
+                }
+            }
+        }
+
     }
 }
