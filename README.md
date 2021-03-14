@@ -8,8 +8,18 @@ YMDB это музыкальный бот для дискорда написан
 - [Ffmpeg](https://ffmpeg.org/download.html)
 - [Git](https://git-scm.com/downloads)
 
+
+
 ## Установка.
 Перед тем как начинать выполнять этот этап у вас должы быть установлены все необходимые зависимости.
+
+### Шаг 0.
+
+Выполните следующую команду:
+
+```terminal
+sudo apt-get install libsodium23 libsodium-dev
+```
 
 ### Шаг 1.
 
