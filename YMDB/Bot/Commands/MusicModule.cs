@@ -484,16 +484,7 @@ namespace YMDB.Bot.Commands
         {
             var vnext = ctx.Client.GetVoiceNext();
             var vnc = vnext.GetConnection(ctx.Guild);
-            // if (vnc == null)
-            // {
-            //     await ctx.RespondAsync("vnc is null");
-            //     return;
-            // }
-            // if (Playlists[vnc.TargetChannel] == null || Playlists[vnc.TargetChannel].GetCount() == 0 )
-            // {
-            //     await ctx.RespondAsync("Для данного канала не существует плейлиста!");
-            //     return;
-            // }
+            
             var startDateTime = DateTime.Now;
             while (vnc.IsPlaying && (DateTime.Now - startDateTime).TotalSeconds < timeoutsec)
             {
