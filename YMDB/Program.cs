@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text;
 using DSharpPlus;
@@ -12,8 +13,19 @@ namespace YMDB
 
         public static void Main(string[] args)
         {
+            var botConfigPath = "";
+            if (args.Length == 0)
+            {
+                botConfigPath = "config/BotConfig.json";
+            }
+            else if (args.Length == 1)
+            {
+                botConfigPath = args[0];
+                Console.WriteLine(args[0]);
+            }
+
             var json = "";
-            using (var fs = File.OpenRead("BotConfig.json"))
+            using (var fs = File.OpenRead(botConfigPath))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
             {
                 json = sr.ReadToEnd();
