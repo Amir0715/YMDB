@@ -1,19 +1,42 @@
-name: Build and deploy
+name: CI\CD
 
 on:
   workflow_run:
-    workflows:
-      - "Lint Code Base"
+    push:
+      branches:
+        - master
+        - dev
+    pull_request:
+      branches:
+        - master
+        - dev
     types:
       - completed
 
   workflow_dispatch:
 
 jobs:
+  lint:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: github/super-linter@v3
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
   build:
     name: Build project
     runs-on: ubuntu-latest
-
+    needs: lint
     steps:
       - uses: actions/checkout@v2
       
@@ -70,3 +93,17 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
+        
+  deploy:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          port: ${{ secrets.SERVER_PORT }}
+          key: ${{ secrets.SERVER_KEY }}
+          script: whoami
