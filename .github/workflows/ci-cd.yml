@@ -105,6 +105,5 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           script: docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/ymdb:latest && \
           docker stop `docker container ls --quiet` && \
-          docker run --rm -d \
-          -v /home/${{ secrets.SERVER_USERNAME }}/config:/usr/src/app/config \
+          docker run --rm -d -v /home/${{ secrets.SERVER_USERNAME }}/config:/usr/src/app/config \
           ${{ secrets.DOCKER_HUB_USERNAME }}/ymdb:latest
