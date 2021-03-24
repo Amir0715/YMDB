@@ -10,13 +10,15 @@ namespace YMDB.Bot.Yandex
     {
         public YandexMusicClient Ymc { get; private set; }
         private static YMDownloader Instance;
-        private string DownloadPath;
+        private readonly string _downloadDir;
         
-        private YMDownloader(string login, string password, string downloadPath)
+        private YMDownloader(string login, string password, string downloadDir)
         {
-            DownloadPath = downloadPath;
-            Ymc = new YandexMusicClient();
-            Ymc.Authorize(login, password);
+            this._downloadDir = downloadDir;
+            if (!Directory.Exists(this._downloadDir))
+                Directory.CreateDirectory(this._downloadDir);
+            this.Ymc = new YandexMusicClient();
+            this.Ymc.Authorize(login, password);
         }
 
         public static YMDownloader GetInstance(string login = null, string password = null, string downloadPath = null)
@@ -28,21 +30,19 @@ namespace YMDB.Bot.Yandex
         {
             // TODO: проверка на наличие файла
             var track = UrlUtils.GetTrack(url);
-            var path = $"{DownloadPath}/{track.Id}.mp3";
-            
-            if (!File.Exists(path))
-                track.Save(path);
-            return path;
+            return this.DownloadTrack(track);
         }
         
         public string DownloadTrack(YTrack track)
         {
             // TODO: проверка на наличие файла
-            var path = $"Data/{track.Id}.mp3";
+            var trackPath = $@"{track.Id}.mp3";
+            var path = Path.Combine(this._downloadDir, trackPath);
+            
             if (!File.Exists(path))
                 track.Save(path);
+            
             return path;
         }
-        
     }
 }
