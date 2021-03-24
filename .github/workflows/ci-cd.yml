@@ -1,17 +1,14 @@
 name: CI\CD
 
 on:
-  workflow_run:
-    push:
-      branches:
-        - master
-        - dev
-    pull_request:
-      branches:
-        - master
-        - dev
-    types:
-      - completed
+  push:
+    branches:
+      - master
+      - dev
+  pull_request:
+    branches:
+      - master
+      - dev
 
   workflow_dispatch:
 
