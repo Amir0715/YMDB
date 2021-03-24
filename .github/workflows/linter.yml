@@ -1,4 +1,3 @@
----
 ###########################
 ###########################
 ## Linter GitHub Actions ##
@@ -16,11 +15,15 @@ name: Lint Code Base
 #############################
 on:
   push:
-    branches-ignore: [master]
+    branches: 
+      - master
+      - dev
     # Remove the line above to run when pushing to master
   pull_request:
-    branches: [master]
-
+    branches:
+      - master
+      - dev
+  workflow_dispatch:
 ###############
 # Set the Job #
 ###############
