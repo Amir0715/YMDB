@@ -1,3 +1,5 @@
+[![Deployd](https://github.com/Amir0715/YMDB/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/Amir0715/YMDB/actions/workflows/ci-cd.yml)
+[![Deployd](https://github.com/Amir0715/YMDB/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/Amir0715/YMDB/actions/workflows/build.yml)
 # YMDB - Yandex Music Discord Bot.
 YMDB это музыкальный бот для дискорда написанный на C# и используя библиотеки [DSharp+](https://github.com/DSharpPlus/DSharpPlus), [Yandex.Music.Api](https://github.com/K1llMan/Yandex.Music.Api). Он воспроизводит в голосовом канале дискорда песни по запросу пользователей из сервиса YandexMusic.
 
