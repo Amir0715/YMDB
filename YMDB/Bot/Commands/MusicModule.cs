@@ -145,10 +145,10 @@ namespace YMDB.Bot.Commands
                 var tracksResults = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, pageIndex).Tracks.Results;
                 
                 await Add(ctx, tracksResults[trackIndexInPage].GetLink());
-                if (!vnc.IsPlaying)
-                {
-                    Play(ctx);
-                }
+                // if (!vnc.IsPlaying)
+                // {
+                //     Play(ctx);
+                // }
             }
         }
         
@@ -457,7 +457,7 @@ namespace YMDB.Bot.Commands
             {
                 // генерация OperationCanceledException при команде next 
                 await vnc.SendSpeakingAsync(true);
-                var ffout = FfmpegUtils.ConvertToPCM(filepath);
+                var ffout = FfmpegUtils.ConvertToPcm(filepath);
                 
                 var txStream = vnc.GetTransmitSink();
 

@@ -15,8 +15,8 @@ namespace YMDB.Bot.Extensions
                 .WithImageUrl($"http://{track.CoverUri.Replace("%%", "1000x1000")}")
                 .WithColor(DiscordColor.Aquamarine)
                 .AddField("Artists", $"{track.Artists.toString()}", true)
-                .AddField("Album:", $"{track.Albums.toString()}", true)
-                .AddField("Durations", $"{track.GetDuration().ToString()}", true);
+                .AddField("Album", $"{track.Albums.toString()}", true)
+                .AddField("Duration", $"{track.GetDuration().ToString()}", true);
         }
 
         public static TimeSpan GetDuration(this YTrack track)

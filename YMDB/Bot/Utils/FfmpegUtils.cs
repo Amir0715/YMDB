@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -7,17 +6,16 @@ namespace YMDB.Bot.Utils
 {
     public static class FfmpegUtils
     {
+        private const string PathToFfmpegWin = "bin/ffmpeg";
+        private const string PathToFfmpegLin = "ffmpeg";
 
-        private static string _pathToFfmpegWin = "bin/ffmpeg";
-        private static string _pathToFfmpegLin = "ffmpeg";
-
-        public static Stream ConvertToPCM(string path)
+        public static Stream ConvertToPcm(string path)
         {
             var fileName = "";
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                fileName = _pathToFfmpegWin;
+                fileName = PathToFfmpegWin;
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                fileName = _pathToFfmpegLin;
+                fileName = PathToFfmpegLin;
             var psi = new ProcessStartInfo
             {
                 FileName = fileName,
@@ -28,6 +26,5 @@ namespace YMDB.Bot.Utils
             var ffmpeg = Process.Start(psi);
             return ffmpeg?.StandardOutput.BaseStream;
         }
-        
     }
 }
