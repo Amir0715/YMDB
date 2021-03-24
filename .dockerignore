@@ -1,0 +1,12 @@
+.git
+.idea
+.gitignore
+.dockerignore
+.github
+Dockerfile
+Data
+*.md
+YMDB/bin
+YMDB/obj
+config
+YMDB/Data
