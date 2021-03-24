@@ -1,4 +1,4 @@
-name: Deploy on server
+name: Build and deploy
 
 on:
   workflow_run:
@@ -31,12 +31,19 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal
       
-  deploy:
-    name: deploy
+  docker:
+    name: docker
     runs-on: ubuntu-latest
     needs: build
     steps:
-      
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+            
       - name: Check Out Repo
         uses: actions/checkout@v2
         
@@ -57,7 +64,9 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/simplewhale:latest
-          
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ymdb:latest
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
