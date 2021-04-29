@@ -24,7 +24,9 @@ namespace YMDB.Bot.Commands
         public Dictionary<DiscordChannel, Playlist.Playlist> Playlists { private get; set; }
         private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
         private CancellationToken _cancellationToken;
-
+        private TimerCallback _leaveTimer;
+        private Timer _timer;
+        
         [Command("play"), Aliases("p"), Description("Play track/playlist/artist's songs/album from yandex.music.") ]
         public async Task Play(CommandContext ctx, [Description("Url of track/playlist/artist's songs/album or title of track."), RemainingText] string url)
         {
@@ -327,6 +329,25 @@ namespace YMDB.Bot.Commands
             await vnext.ConnectAsync(channel);
             Playlists.Add(channel, new Playlist.Playlist());
             await ctx.RespondAsync($"Connected to `{channel.Name}`");
+            this._leaveTimer = new TimerCallback(LeaveTimerIf);
+            this._timer = new Timer(this._leaveTimer, ctx, 3*60*1000, 1*60*1000);
+        }
+
+        private void LeaveTimerIf(object obj)
+        {
+            CommandContext ctx = (CommandContext)obj;
+            VoiceNextExtension vnext;
+
+            if ((vnext = ctx.Client.GetVoiceNext()) == null)
+            {
+                // not enabled
+                return;
+            }
+            VoiceNextConnection vnc = vnext.GetConnection(ctx.Guild);
+            if (!vnc.IsPlaying)
+            {
+                Leave(ctx);
+            }
         }
         
         [Command("leave"), Aliases("le"), Description("Leave from channel.")]
