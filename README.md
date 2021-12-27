@@ -25,7 +25,7 @@ YMDB это музыкальный бот для дискорда написан
 sudo apt-get install libsodium23 libsodium-dev
 ```
 
-### Gentoo
+## Gentoo
 ```terminal
 sudo MAKEOPTS="-j8" emerge -av "<dev-dotnet/dotnet-sdk-bin-6.0" dev-libs/libsodium
 ```
@@ -58,6 +58,11 @@ git clone https://github.com/Amir0715/YMBD.git $YOUR_DIR -b master
 `<YANDEX_MUSIC_PASSWORD>` - Ваш пароль к аккаунту yandex.music.</br>
 `<ABSOLUTE_DOWNLOAD_DIR>` - Абсолютный путь к аталогу для временного хранения аудиофайлов.</br>
 
+Чтобы получить токен необходимо:
+  1. Создать на указанной странице приложение.
+  2. На странице приложения нажать на вкладку Бот.
+  3. На странице бота справа от аватарки кнопка скопировать.
+
 ### Шаг 3
 
 #### Соберите проект
@@ -69,7 +74,22 @@ dotnet build --no-restore
 ```
 Собранное приложение будет лежать в каталоге `$YOUR_DIR/YMBD/YMBD/bin/Debug/net5.0` с названием `YMBD.dll`.
 
-### Шаг 4
+### Шаг 4 Добавьте бота на сервер
+
+По ссылке выше (дискорд портал разработчиков) зайдите в свое приложение.
+Нажмите OAuth2 > URL Generator.
+Поставьте галку bot.
+в графе Voice Permissions
+Выставьте:
+ * Connect
+ * Speak
+ * Use voice activity
+
+В графе Text permissions
+Выставьте:
+ * Read message history
+
+### Шаг 5
 #### Запуск приложения
 Запустить его можно вызвав команду:
 ```terminal
