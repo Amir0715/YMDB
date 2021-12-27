@@ -25,16 +25,21 @@ YMDB это музыкальный бот для дискорда написан
 sudo apt-get install libsodium23 libsodium-dev
 ```
 
+### Gentoo
+```terminal
+sudo MAKEOPTS="-j8" emerge -av "<dev-dotnet/dotnet-sdk-bin-6.0" dev-libs/libsodium
+```
+
 ### Шаг 1
 #### Склонируйте репозиторий
 
 ```terminal
-git clone https://github.com/Amir0715/YMBD.git ~/YMDB -b master
+git clone https://github.com/Amir0715/YMBD.git $YOUR_DIR -b master
 ```
 
 ### Шаг 2
 #### Создайте файл BotConfig.json
-Создайте файл BotConfig.json в каталоге YMDB и добавьте в него следующее:
+Создайте файл BotConfig.json в каталоге YMDB/config и добавьте в него следующее:
 
 ```json
 {
@@ -62,11 +67,11 @@ cd ~/YMDB
 dotnet restore
 dotnet build --no-restore
 ```
-Собранное приложение будет лежать в каталоге `~/YMBD/YMBD/bin/Debug/net5.0` с названием `YMBD.dll`.
+Собранное приложение будет лежать в каталоге `$YOUR_DIR/YMBD/YMBD/bin/Debug/net5.0` с названием `YMBD.dll`.
 
 ### Шаг 4
 #### Запуск приложения
 Запустить его можно вызвав команду:
 ```terminal
-dotnet ~/YMDB/YMDB/bin/Debug/net5.0/YMBD.dll
+dotnet $YOUR_DIR/YMDB/YMDB/bin/Debug/net5.0/YMBD.dll
 ```
