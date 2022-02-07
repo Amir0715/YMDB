@@ -25,16 +25,21 @@ YMDB это музыкальный бот для дискорда написан
 sudo apt-get install libsodium23 libsodium-dev
 ```
 
+## Gentoo
+```terminal
+sudo MAKEOPTS="-j8" emerge -av "<dev-dotnet/dotnet-sdk-bin-6.0" dev-libs/libsodium
+```
+
 ### Шаг 1
 #### Склонируйте репозиторий
 
 ```terminal
-git clone https://github.com/Amir0715/YMBD.git ~/YMDB -b master
+git clone https://github.com/Amir0715/YMBD.git $YOUR_DIR -b master
 ```
 
 ### Шаг 2
 #### Создайте файл BotConfig.json
-Создайте файл BotConfig.json в каталоге YMDB и добавьте в него следующее:
+Создайте файл BotConfig.json в каталоге YMDB/config и добавьте в него следующее:
 
 ```json
 {
@@ -53,6 +58,11 @@ git clone https://github.com/Amir0715/YMBD.git ~/YMDB -b master
 `<YANDEX_MUSIC_PASSWORD>` - Ваш пароль к аккаунту yandex.music.</br>
 `<ABSOLUTE_DOWNLOAD_DIR>` - Абсолютный путь к аталогу для временного хранения аудиофайлов.</br>
 
+Чтобы получить токен необходимо:
+  1. Создать на указанной странице приложение.
+  2. На странице приложения нажать на вкладку Бот.
+  3. На странице бота справа от аватарки кнопка скопировать.
+
 ### Шаг 3
 
 #### Соберите проект
@@ -62,11 +72,45 @@ cd ~/YMDB
 dotnet restore
 dotnet build --no-restore
 ```
-Собранное приложение будет лежать в каталоге `~/YMBD/YMBD/bin/Debug/net5.0` с названием `YMBD.dll`.
+Собранное приложение будет лежать в каталоге `$YOUR_DIR/YMBD/YMBD/bin/Debug/net5.0` с названием `YMBD.dll`.
 
-### Шаг 4
+### Шаг 
+
+#### Добавьте бота на сервер
+
+По ссылке выше (дискорд портал разработчиков) зайдите в свое приложение.
+Нажмите OAuth2 > URL Generator.
+Поставьте галку bot.
+в графе Voice Permissions
+Выставьте:
+ * Connect
+ * Speak
+ * Use voice activity
+
+В графе Text permissions
+Выставьте:
+ * Read message history
+
+### Шаг 5
 #### Запуск приложения
 Запустить его можно вызвав команду:
 ```terminal
-dotnet ~/YMDB/YMDB/bin/Debug/net5.0/YMBD.dll
+dotnet $YOUR_DIR/YMDB/YMDB/bin/Debug/net5.0/YMBD.dll
 ```
+
+### Управление ботом.
+Все команды пишутся с использованием префикса, указанного вами ранее в конфиге следующим образом:
+"префикс команда аргументы ( если требуются)"
+Разделенные пробелами.
+
+#### Основные команды
+Команды указаны в виде 
+"сокращение-полная команда (список возможных аргументов через запятую) # описание"
+Аргументы относятся как к сокращенной, так и к полной команде
+
+j-join (название канала) \# присоединиться к голосовому каналу  
+p-play (url, название песни, группы, плейлиста, альбома) \# запустить проигрывание (...) иногда нужно пару раз вызвать  
+s-stop   
+se-search(название трека)  
+n-next  
+le-leave \# выйти из канала
