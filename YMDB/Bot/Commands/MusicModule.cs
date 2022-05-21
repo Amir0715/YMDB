@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -519,6 +520,8 @@ namespace YMDB.Bot.Commands
                     await vnc.WaitForPlaybackFinishAsync();
 
                     Playlists[vnc.TargetChannel].RemoveAt(0);
+
+                    File.Delete(filepath);
                 } else { await ctx.Message.RespondAsync("Playlist is empty!"); }
             }
         }
