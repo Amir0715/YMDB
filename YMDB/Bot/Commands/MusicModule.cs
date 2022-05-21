@@ -50,6 +50,12 @@ namespace YMDB.Bot.Commands
                     return;
             }
 
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                await ctx.RespondAsync("Аргумент команды пустой");
+                return;
+            }
+
             Exception exc = null;
             try
             {
@@ -113,6 +119,12 @@ namespace YMDB.Bot.Commands
             {
                 await Join(ctx);
                 vnc = vnext.GetConnection(ctx.Guild);
+            }
+            
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                await ctx.RespondAsync("Аргумент команды пустой");
+                return;
             }
 
             var tracks = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track).Tracks.Results;
