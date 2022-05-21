@@ -25,14 +25,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="bin\Debug\net5.0\BotConfig.json" />
       <None Update="Config\BotConfig.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="bin\Debug\net5.0\Data" />
     </ItemGroup>
 
 </Project>
