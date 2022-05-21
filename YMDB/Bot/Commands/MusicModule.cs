@@ -331,7 +331,7 @@ namespace YMDB.Bot.Commands
                 channel = vstat.Channel;
 
             // connect
-            await vnext.ConnectAsync(channel);
+            await channel.ConnectAsync();
             Playlists.Add(channel, new Playlist.Playlist());
             await ctx.RespondAsync($"Connected to `{channel.Name}`");
         }
