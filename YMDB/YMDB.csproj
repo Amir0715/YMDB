@@ -21,12 +21,20 @@
       <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-rc2" />
       <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0" />
       <PackageReference Include="DSharpPlus.VoiceNext" Version="4.2.0" />
-      <PackageReference Include="FFMpegCore" Version="4.8.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
     <ItemGroup>
       <None Update="Config\BotConfig.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="bundle\ffmpeg.exe">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="bundle\ffplay.exe">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="bundle\ffprobe.exe">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

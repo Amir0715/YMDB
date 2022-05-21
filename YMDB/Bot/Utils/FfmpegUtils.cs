@@ -6,7 +6,7 @@ namespace YMDB.Bot.Utils
 {
     public static class FfmpegUtils
     {
-        private const string PathToFfmpegWin = "bin/ffmpeg";
+        private const string PathToFfmpegWin = "bundle/ffmpeg";
         private const string PathToFfmpegLin = "ffmpeg";
 
         public static Stream ConvertToPcm(string path)
