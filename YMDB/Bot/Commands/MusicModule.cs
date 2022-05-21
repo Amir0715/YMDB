@@ -479,11 +479,11 @@ namespace YMDB.Bot.Commands
             {
                 // генерация OperationCanceledException при команде next 
                 await vnc.SendSpeakingAsync();
-                var ffout = FfmpegUtils.ConvertToPcm(filepath);
-
+                await using var ffout = FfmpegUtils.ConvertToPcm(filepath);
                 var txStream = vnc.GetTransmitSink();
 
                 await ffout.CopyToAsync(txStream, cancellationToken: _cancellationToken);
+
                 await txStream.FlushAsync(_cancellationToken);
             }
             catch (OperationCanceledException) { }
