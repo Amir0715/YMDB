@@ -19,7 +19,7 @@ namespace YMDB
             var botConfigPath = "";
             if (args.Length == 0)
             {
-                botConfigPath = "config/BotConfig.json";
+                botConfigPath = "Сonfig/BotConfig.json";
             }
             else if (args.Length == 1)
             {

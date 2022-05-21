@@ -26,6 +26,9 @@
 
     <ItemGroup>
       <None Include="bin\Debug\net5.0\BotConfig.json" />
+      <None Update="Config\BotConfig.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>
