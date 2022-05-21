@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -10,7 +11,9 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.VoiceNext;
+
 using Yandex.Music.Api.Models.Common;
+
 using YMDB.Bot.CustomPaginationRequests;
 using YMDB.Bot.Extensions;
 using YMDB.Bot.Utils;
@@ -22,7 +25,7 @@ namespace YMDB.Bot.Commands
     public class MusicModule : BaseCommandModule
     {
         public Dictionary<DiscordChannel, Playlist.Playlist> Playlists { private get; set; }
-        private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _cancelTokenSource = new();
         private CancellationToken _cancellationToken;
 
         [Command("play"), Aliases("p"), Description("Play track/playlist/artist's songs/album from yandex.music.") ]
@@ -40,7 +43,7 @@ namespace YMDB.Bot.Commands
             var vnc = vnext.GetConnection(ctx.Guild);
             if (vnc == null)
             {
-                await this.Join(ctx);
+                await Join(ctx);
                 vnc = vnext.GetConnection(ctx.Guild);
                 if (vnc == null)
                     return;
@@ -106,7 +109,7 @@ namespace YMDB.Bot.Commands
             var vnc = vnext.GetConnection(ctx.Guild);
             if (vnc == null)
             {
-                await this.Join(ctx);
+                await Join(ctx);
                 vnc = vnext.GetConnection(ctx.Guild);
             }
             
@@ -119,8 +122,8 @@ namespace YMDB.Bot.Commands
             var pages = interactivity.GeneratePagesInEmbed(input: str, 
                 splittype: SplitType.Line, embedbase: embed);
 
-            var message = await new DiscordMessageBuilder().WithContent(pages.First<Page>().Content)
-                .WithEmbed(pages.First<Page>().Embed).SendAsync(ctx.Channel).ConfigureAwait(false);
+            var message = await new DiscordMessageBuilder().WithContent(pages.First().Content)
+                .WithEmbed(pages.First().Embed).SendAsync(ctx.Channel).ConfigureAwait(false);
 
             var customPage = new CustomPaginationRequest(message, ctx.Member,
                 PaginationBehaviour.Ignore, PaginationDeletion.DeleteEmojis, new PaginationEmojis(),
@@ -456,7 +459,7 @@ namespace YMDB.Bot.Commands
             try
             {
                 // генерация OperationCanceledException при команде next 
-                await vnc.SendSpeakingAsync(true);
+                await vnc.SendSpeakingAsync();
                 var ffout = FfmpegUtils.ConvertToPcm(filepath);
                 
                 var txStream = vnc.GetTransmitSink();
@@ -510,7 +513,7 @@ namespace YMDB.Bot.Commands
                 }
                 else
                 {
-                    await ctx.Message.RespondAsync($"Playlist is empty!");
+                    await ctx.Message.RespondAsync("Playlist is empty!");
                 }
             }
         }
@@ -538,13 +541,13 @@ namespace YMDB.Bot.Commands
             {
                 await PlayNextTrack(ctx);
             }
-            await ctx.Message.RespondAsync($"Playlist is empty!");
+            await ctx.Message.RespondAsync("Playlist is empty!");
         }
         private void ResetToken()
         {
-            this._cancelTokenSource = new CancellationTokenSource();
-            this._cancellationToken = this._cancelTokenSource.Token;
-            _cancellationToken.Register(()=> this.ResetToken());
+            _cancelTokenSource = new CancellationTokenSource();
+            _cancellationToken = _cancelTokenSource.Token;
+            _cancellationToken.Register(()=> ResetToken());
         }
         private IEnumerable<Page> GetNextPage(InteractivityExtension interactivity, string title)
         {
@@ -553,7 +556,7 @@ namespace YMDB.Bot.Commands
 
             if (total != null)
             {
-                var tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track, 0).Tracks.Results;
+                var tmp = YMDownloader.GetInstance().Ymc.Search(title, YSearchType.Track).Tracks.Results;
 
                 startindex += 10;
                 var (str, embed) = tmp.GetPage(1, startindex);

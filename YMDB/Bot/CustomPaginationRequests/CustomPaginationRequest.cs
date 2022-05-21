@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
+
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
@@ -35,63 +34,63 @@ namespace YMDB.Bot.CustomPaginationRequests
             TimeSpan timeout,
             params Page[] pages)
         {
-            this._tcs = new TaskCompletionSource<bool>();
-            this._ct = new CancellationTokenSource(timeout);
-            this._ct.Token.Register((Action) (() => this._tcs.TrySetResult(true)));
-            this._timeout = timeout;
-            this._message = message;
-            this._user = user;
-            this._deletion = deletion;
-            this._behaviour = behaviour;
-            this._emojis = emojis;
-            this._pages = new List<Page>();
+            _tcs = new TaskCompletionSource<bool>();
+            _ct = new CancellationTokenSource(timeout);
+            _ct.Token.Register((Action) (() => _tcs.TrySetResult(true)));
+            _timeout = timeout;
+            _message = message;
+            _user = user;
+            _deletion = deletion;
+            _behaviour = behaviour;
+            _emojis = emojis;
+            _pages = new List<Page>();
             foreach (Page page in pages)
-                this._pages.Add(page);
+                _pages.Add(page);
         }
 
         public void SetEnumerator(IEnumerator<Page> enumerator)
         {
-            this._enumerator ??= enumerator;
+            _enumerator ??= enumerator;
         }
 
         public async Task<Page> GetPageAsync()
         {
             await Task.Yield();
-            return this._pages[this.index];
+            return _pages[index];
         }
 
         public async Task SkipLeftAsync()
         {
             await Task.Yield();
-            this.index = 0;
+            index = 0;
         }
 
         public async Task SkipRightAsync()
         {
             await Task.Yield();
-            this.index = this._pages.Count - 1;
+            index = _pages.Count - 1;
         }
 
         public async Task NextPageAsync()
         {
-            if (this._enumerator.MoveNext())
-                this._pages.Add(this._enumerator.Current);
+            if (_enumerator.MoveNext())
+                _pages.Add(_enumerator.Current);
             await Task.Yield();
-            switch (this._behaviour)
+            switch (_behaviour)
             {
                 case PaginationBehaviour.WrapAround:
-                    if (this.index == this._pages.Count - 1)
+                    if (index == _pages.Count - 1)
                     {
-                        this.index = 0;
+                        index = 0;
                         break;
                     }
 
-                    ++this.index;
+                    ++index;
                     break;
                 case PaginationBehaviour.Ignore:
-                    if (this.index == this._pages.Count - 1)
+                    if (index == _pages.Count - 1)
                         break;
-                    ++this.index;
+                    ++index;
                     break;
             }
         }
@@ -99,21 +98,21 @@ namespace YMDB.Bot.CustomPaginationRequests
         public async Task PreviousPageAsync()
         {
             await Task.Yield();
-            switch (this._behaviour)
+            switch (_behaviour)
             {
                 case PaginationBehaviour.WrapAround:
-                    if (this.index == 0)
+                    if (index == 0)
                     {
-                        this.index = this._pages.Count - 1;
+                        index = _pages.Count - 1;
                         break;
                     }
 
-                    --this.index;
+                    --index;
                     break;
                 case PaginationBehaviour.Ignore:
-                    if (this.index == 0)
+                    if (index == 0)
                         break;
-                    --this.index;
+                    --index;
                     break;
             }
         }
@@ -121,30 +120,30 @@ namespace YMDB.Bot.CustomPaginationRequests
         public async Task<PaginationEmojis> GetEmojisAsync()
         {
             await Task.Yield();
-            return this._emojis;
+            return _emojis;
         }
 
         public async Task<DiscordMessage> GetMessageAsync()
         {
             await Task.Yield();
-            return this._message;
+            return _message;
         }
 
         public async Task<DiscordUser> GetUserAsync()
         {
             await Task.Yield();
-            return this._user;
+            return _user;
         }
 
         public async Task DoCleanupAsync()
         {
-            switch (this._deletion)
+            switch (_deletion)
             {
                 case PaginationDeletion.DeleteEmojis:
-                    await this._message.DeleteAllReactionsAsync().ConfigureAwait(false);
+                    await _message.DeleteAllReactionsAsync().ConfigureAwait(false);
                     break;
                 case PaginationDeletion.DeleteMessage:
-                    await this._message.DeleteAsync().ConfigureAwait(false);
+                    await _message.DeleteAsync().ConfigureAwait(false);
                     break;
             }
         }
@@ -152,18 +151,18 @@ namespace YMDB.Bot.CustomPaginationRequests
         public async Task<TaskCompletionSource<bool>> GetTaskCompletionSourceAsync()
         {
             await Task.Yield();
-            return this._tcs;
+            return _tcs;
         }
 
 
-        ~CustomPaginationRequest() => this.Dispose();
+        ~CustomPaginationRequest() => Dispose();
 
         /// <summary>Disposes this PaginationRequest.</summary>
         public void Dispose()
         {
-            this._ct.Dispose();
-            this._tcs = (TaskCompletionSource<bool>) null;
-            this._enumerator.Dispose();
+            _ct.Dispose();
+            _tcs = null;
+            _enumerator.Dispose();
         }
     }
 }

@@ -1,8 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
 
 namespace YMDB.Bot.Utils
 {

@@ -12,9 +12,9 @@ namespace YMDB.Bot.Utils
         public static Stream ConvertToPcm(string path)
         {
             var fileName = "";
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 fileName = PathToFfmpegWin;
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 fileName = PathToFfmpegLin;
             var psi = new ProcessStartInfo
             {

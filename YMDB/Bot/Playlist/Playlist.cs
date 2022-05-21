@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 using Yandex.Music.Api.Models.Album;
 using Yandex.Music.Api.Models.Artist;
 using Yandex.Music.Api.Models.Playlist;
 using Yandex.Music.Api.Models.Track;
+
 using YMDB.Bot.Extensions;
-using YMDB.Bot.Utils;
 using YMDB.Bot.Yandex;
 
 /*
@@ -148,7 +149,7 @@ namespace YMDB.Bot.Playlist
         public override string ToString()
         {
             var result = "";
-            if (this.GetCount() == 0) result = "Empty playlist!";
+            if (GetCount() == 0) result = "Empty playlist!";
             var i = 0;
             foreach (var track in Tracks)
             {
