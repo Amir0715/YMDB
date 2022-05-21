@@ -44,6 +44,7 @@ git clone https://github.com/Amir0715/YMBD.git $YOUR_DIR -b master
 ```json
 {
   "token": "<DISCORD_BOT_TOKEN>",
+  "yandexToken": "<YANDEX_MUSIC_TOKEN>",
   "prefix" : "<DISCORD_BOT_PREFIX>",
   "login" : "<YANDEX_MUSIC_LOGIN>",
   "password" : "<YANDEX_MUSIC_PASSWORD>",
@@ -53,6 +54,7 @@ git clone https://github.com/Amir0715/YMBD.git $YOUR_DIR -b master
 Рассмотрим его подробнее:<br>
 
 `<DISCORD_BOT_TOKEN>` - Ваш токен который вам необходимо получить на [странице](https://discord.com/developers/applications) для разработчиков.</br>
+`<YANDEX_MUSIC_TOKEN>` - Ваш токен от яндекс музыки</br>
 `<DISCORD_BOT_PREFIX>` - Префикс к командам для бота.</br>
 `<YANDEX_MUSIC_LOGIN>` - Ваш логин к аккаунту yandex.music.</br>
 `<YANDEX_MUSIC_PASSWORD>` - Ваш пароль к аккаунту yandex.music.</br>
@@ -62,6 +64,22 @@ git clone https://github.com/Amir0715/YMBD.git $YOUR_DIR -b master
   1. Создать на указанной странице приложение.
   2. На странице приложения нажать на вкладку Бот.
   3. На странице бота справа от аватарки кнопка скопировать.
+
+Чтобы получить токен яндекса, выполните запрос
+
+```shell
+curl --location --request POST 'https://oauth.yandex.ru/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=password' \
+--data-urlencode 'client_id=23cabbbdc6cd418abb4b39c32c41195d' \
+--data-urlencode 'client_secret=53bc75238f0c4d08a118e51fe9203300' \
+--data-urlencode 'username=<YANDEX_MUSIC_LOGIN>' \
+--data-urlencode 'password=<YANDEX_MUSIC_PASSWORD>'
+```
+
+Заполнение токена яндекса не обязательно. 
+В случае, если токен яндекса существует, то используется он, 
+в обратном случае используется авторизация через логин и пароль
 
 ### Шаг 3
 

@@ -4,8 +4,11 @@ namespace YMDB.Bot.Utils
 {
     public struct ConfigJson
     {
-        [JsonProperty("token")]
-        public string Token { get; private set; }
+        [JsonProperty("discordToken")]
+        public string DiscordToken { get; private set; }
+        
+        [JsonProperty("yandexToken")]
+        public string YandexToken { get; private set; }
 
         [JsonProperty("prefix")]
         public string CommandPrefix { get; private set; }

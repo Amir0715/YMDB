@@ -10,22 +10,43 @@ namespace YMDB.Bot.Yandex
 {
     public class YMDownloader
     {
-        public YandexMusicClient Ymc { get; private set; }
+        public YandexMusicClient Ymc { get; } = new();
         private static YMDownloader Instance;
-        private readonly string _downloadDir;
+        private string DownloadDir;
         
         private YMDownloader(string login, string password, string downloadDir)
         {
-            _downloadDir = downloadDir;
-            if (!Directory.Exists(_downloadDir))
-                Directory.CreateDirectory(_downloadDir);
-            Ymc = new YandexMusicClient();
+            SetDownloadDir(downloadDir);
             Ymc.Authorize(login, password);
         }
+        
+        private YMDownloader(string token, string downloadDir)
+        {
+            SetDownloadDir(downloadDir);
+            Ymc.Authorize(token);
+        }
 
-        public static YMDownloader GetInstance(string login = null, string password = null, string downloadPath = null)
+        private void SetDownloadDir(string downloadDir)
+        {
+            DownloadDir = downloadDir;
+            
+            if (!Directory.Exists(DownloadDir))
+                Directory.CreateDirectory(DownloadDir!);
+        }
+
+        public static YMDownloader GetInstance(string login, string password, string downloadPath)
         {
             return Instance ??= new YMDownloader(login, password, downloadPath);
+        }
+        
+        public static YMDownloader GetInstance(string token, string downloadPath)
+        {
+            return Instance ??= new YMDownloader(token, downloadPath);
+        }
+        
+        public static YMDownloader GetInstance()
+        {
+            return Instance;
         }
 
         public string DownloadTrack(string url)
@@ -39,7 +60,7 @@ namespace YMDB.Bot.Yandex
         {
             // TODO: проверка на наличие файла
             var trackPath = $@"{track.Id}.mp3";
-            var path = Path.Combine(_downloadDir, trackPath);
+            var path = Path.Combine(DownloadDir, trackPath);
             
             if (!File.Exists(path))
                 track.Save(path);

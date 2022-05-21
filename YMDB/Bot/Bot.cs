@@ -41,7 +41,7 @@ namespace YMDB.Bot
         {
             Discord = new DiscordClient(new DiscordConfiguration
             {
-                Token = config.Token,
+                Token = config.DiscordToken,
                 TokenType = TokenType.Bot,
                 MinimumLogLevel = LogLevel.Debug,
                 AutoReconnect = true
@@ -76,8 +76,11 @@ namespace YMDB.Bot
             Commands.RegisterCommands<MusicModule>();
             
             Voice =  Discord.UseVoiceNext();
-
-            YMD = YMDownloader.GetInstance(config.Login, config.Password, config.DownloadPath);
+            
+            YMD 
+                = string.IsNullOrWhiteSpace(config.YandexToken) 
+                    ? YMDownloader.GetInstance(config.Login, config.Password, config.DownloadPath)
+                    : YMDownloader.GetInstance(config.YandexToken, config.DownloadPath);
             
         }
         
