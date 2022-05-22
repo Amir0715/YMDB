@@ -6,15 +6,15 @@ namespace YMDB.Bot.Utils
 {
     public static class FfmpegUtils
     {
-        private const string PathToFfmpegWin = "bin/ffmpeg";
+        private const string PathToFfmpegWin = "bundle/ffmpeg";
         private const string PathToFfmpegLin = "ffmpeg";
 
         public static Stream ConvertToPcm(string path)
         {
             var fileName = "";
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 fileName = PathToFfmpegWin;
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 fileName = PathToFfmpegLin;
             var psi = new ProcessStartInfo
             {

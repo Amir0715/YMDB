@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -10,8 +11,10 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.VoiceNext;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using YMDB.Bot.Commands;
 using YMDB.Bot.Utils;
 using YMDB.Bot.Yandex;
@@ -23,7 +26,7 @@ namespace YMDB.Bot
 
         #region fields
         
-        public readonly EventId BotEventId = new EventId(42, "Bot-Music");
+        public readonly EventId BotEventId = new(42, "Bot-Music");
         private DiscordClient Discord;
         private CommandsNextExtension Commands;
         private VoiceNextExtension Voice;
@@ -36,46 +39,48 @@ namespace YMDB.Bot
         
         public Bot(ConfigJson config)
         {
-            this.Discord = new DiscordClient(new DiscordConfiguration
+            Discord = new DiscordClient(new DiscordConfiguration
             {
-                Token = config.Token,
+                Token = config.DiscordToken,
                 TokenType = TokenType.Bot,
                 MinimumLogLevel = LogLevel.Debug,
                 AutoReconnect = true
             });
             
-            this.Services = new ServiceCollection()
+            Services = new ServiceCollection()
                 .AddSingleton<Dictionary<DiscordChannel, Playlist.Playlist>>()
                 .BuildServiceProvider();
             
-            this.Commands = this.Discord.UseCommandsNext(new CommandsNextConfiguration
+            Commands = Discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new []{ config.CommandPrefix },
                 EnableMentionPrefix = true,
-                Services = this.Services
+                Services = Services
             });
             
-            this.Discord.UseInteractivity(new InteractivityConfiguration()
-            {
+            Discord.UseInteractivity(new InteractivityConfiguration {
                 PollBehaviour = PollBehaviour.DeleteEmojis,
                 Timeout = TimeSpan.FromSeconds(30)
             });
             
             // регистрация ивентов 
-            this.Discord.Ready += this.Client_Ready;
-            this.Discord.GuildAvailable += this.Client_GuildAvailable;
-            this.Discord.ClientErrored += this.Client_ClientError;
+            Discord.Ready += Client_Ready;
+            Discord.GuildAvailable += Client_GuildAvailable;
+            Discord.ClientErrored += Client_ClientError;
             
             // регистрация командных исполнителей 
-            this.Commands.CommandExecuted += this.Commands_CommandExecuted;
-            this.Commands.CommandErrored += this.Commands_CommandErrored;
+            Commands.CommandExecuted += Commands_CommandExecuted;
+            Commands.CommandErrored += Commands_CommandErrored;
             
             // регистрация коммандых модулей 
-            this.Commands.RegisterCommands<MusicModule>();
+            Commands.RegisterCommands<MusicModule>();
             
-            this.Voice =  this.Discord.UseVoiceNext();
-
-            this.YMD = YMDownloader.GetInstance(config.Login, config.Password, config.DownloadPath);
+            Voice =  Discord.UseVoiceNext();
+            
+            YMD 
+                = string.IsNullOrWhiteSpace(config.YandexToken) 
+                    ? YMDownloader.GetInstance(config.Login, config.Password, config.DownloadPath)
+                    : YMDownloader.GetInstance(config.YandexToken, config.DownloadPath);
             
         }
         
@@ -85,12 +90,12 @@ namespace YMDB.Bot
         
         public async Task StartAsync()
         {
-            await this.Discord.ConnectAsync();
+            await Discord.ConnectAsync();
             await Task.Delay(-1);
         }
         
         public async Task StopAsync()
-            => await this.Discord.DisconnectAsync();
+            => await Discord.DisconnectAsync();
 
         #endregion
 

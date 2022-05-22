@@ -1,8 +1,11 @@
 using System;
 using System.IO;
 using System.Text;
+
 using DSharpPlus;
+
 using Newtonsoft.Json;
+
 using YMDB.Bot.Utils;
 
 namespace YMDB
@@ -16,7 +19,7 @@ namespace YMDB
             var botConfigPath = "";
             if (args.Length == 0)
             {
-                botConfigPath = "config/BotConfig.json";
+                botConfigPath = "Config/BotConfig.json";
             }
             else if (args.Length == 1)
             {

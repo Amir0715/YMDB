@@ -1,0 +1,8 @@
+{
+  "discordToken": "<DISCORD_BOT_TOKEN>",
+  "yandexToken": "<YANDEX_MUSIC_TOKEN>",
+  "prefix" : "<DISCORD_BOT_PREFIX>",
+  "login" : "<YANDEX_MUSIC_LOGIN>",
+  "password" : "<YANDEX_MUSIC_PASSWORD>",
+  "downloadPath" : "<ABSOLUTE_DOWNLOAD_DIR>"
+}
